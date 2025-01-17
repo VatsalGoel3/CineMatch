@@ -1,42 +1,116 @@
 const express = require('express');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-// POST /auth/register
-// This route creates a new user (with hashed password from the model hook).
-router.post('/register', async (req, res) => {
+// ========================
+// Registration Validations
+// ========================
+const registerValidationRules = [
+    body('username')
+        .trim()
+        .notEmpty().withMessage('Username is required')
+        .isLength({ min: 3 }).withMessage('Usernmae must be at least 3 characters long'),
+    body('email')
+        .trim()
+        .notEmpty().withMessage('Email is required')
+        .isEmail().withMessage('Email is invalid'),
+    body('password')
+        .notEmpty().withMessage('Password is required')
+        .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
+];
+
+// =================
+// Login Validations
+// =================
+const loginValidationRules = [
+    body('email')
+        .trim()
+        .notEmpty().withMessage('Email is required')
+        .isEmail().withMessage('Email is invalid'),
+    body('password')
+        .notEmpty().withMessage('Password is required')
+];
+
+// ==================
+// Registration Route
+// ==================
+router.post('/register', registerValidationRules, async (req, res) => {
     try {
+        // Check validation
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ msg: 'Validation failed', errors: errors.array() });
+        }
+
         const { username, email, password } = req.body;
 
-    // Check if all fields are provided
-    if (!username || !email || !password) {
-        return res.status(400).json({ msg: 'All fields are required.' });    
-    }
+        // Check if user or email already exists
+        const exisitingUser = await User.findOne({
+            $or: [{ username }, { email }]
+        });
+        if (exisitingUser) {
+            return res.status(400).json({ msg: 'Username or email already in use.' });
+        }
 
-    // Check if user or email alreadu exists
-    const existingUser = await User.findOne({
-        $or: [{ username }, { email }]
-    });
-    if (existingUser) {
-        return res.status(400).json({ msg: 'Username or email already in use.' });
-    }
+        // Create and save the new user
+        const newUser = new User({ username, email, password });
+        await newUser.save();
 
-    // Create and save the new user
-    const newUser = new User({ username, email, password });
-    await newUser.save();
-
-    // Return success response
-    return res.status(201).json({
-        msg: 'User registered succesfully!',
-        userId: newUser._id,
-        username: newUser.username
-    });
-
+        return res.status(201).json({
+            msg: 'User registered successfully!',
+            userId: newUser._id,
+            username: newUser.username
+        });
     } catch (error) {
         console.error('Register Error:', error);
         return res.status(500).json({ msg: 'Server error, please try again.' });
     }
+});
 
+// ===========
+// Login Route
+// ===========
+router.post('/login', loginValidationRules, async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ msg: 'Validation failed', errors: errors.array() });
+        }
+
+        const { email, password } = req.body;
+
+        // Check if user exists
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ msg: 'Invalid email or password. '});
+        }
+
+        // Compare password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ msg: 'Invalid email or password.' });
+        }
+
+        // Generate token
+        const payload = { userId: user._id, username: user.username };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        return res.status(200).json({
+            msg: 'Login successful!',
+            token,
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email
+            }
+        });
+    } catch (error) {
+        console.error('Login Error', error);
+        return res.status(500).json({ msg: 'Server error, please try again.' });
+    }
 });
 
 module.exports = router;
