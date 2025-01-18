@@ -3,8 +3,11 @@ const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
 
+// Import existing routes
 const authRoutes = require('./routes/auth');
-const swipeRoutes = require('./routes/swipe');
+
+// Import the new movies route
+const movieRoutes = require('./routes/movies');
 
 const app = express()
 
@@ -27,7 +30,7 @@ app.get('/', (req, res) => {
 app.use('/auth', authRoutes);
 
 // Swipe routes
-app.use('/swipe', swipeRoutes);
+app.use('/movies', movieRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
