@@ -3,8 +3,8 @@ const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
 
-// Import the Auth router
 const authRoutes = require('./routes/auth');
+const swipeRoutes = require('./routes/swipe');
 
 const app = express()
 
@@ -23,8 +23,11 @@ app.get('/', (req, res) => {
     res.send('Welcome to CineMatch API!');
 });
 
-// --- User Auth routes ---
+// Auth routes
 app.use('/auth', authRoutes);
+
+// Swipe routes
+app.use('/swipe', swipeRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
