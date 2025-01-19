@@ -6,6 +6,9 @@ const mongoose = require('mongoose')
 // Import auth route
 const authRoutes = require('./routes/auth');
 
+// Import swiper route
+const swipeRoutes = require('./routes/swipe');
+
 // Import movies route
 const movieRoutes = require('./routes/movies');
 
@@ -36,7 +39,7 @@ app.get('/', (req, res) => {
 app.use('/auth', authRoutes);
 
 // Swipe routes
-//app.use('/movies', movieRoutes);
+app.use('/swipe', swipeRoutes);
 
 // Movies routes
 app.use('/movies', movieRoutes);
