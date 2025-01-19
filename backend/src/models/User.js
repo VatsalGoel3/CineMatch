@@ -16,7 +16,13 @@ const userSchema = new mongoose.Schema(
         password: {
             type: String,
             required: true
-        }
+        },
+        preferredgenres: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Genre'
+            }
+        ]
     },
     { timestamps: true}
 );

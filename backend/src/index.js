@@ -3,11 +3,17 @@ const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
 
-// Import existing routes
+// Import auth route
 const authRoutes = require('./routes/auth');
 
-// Import the new movies route
+// Import movies route
 const movieRoutes = require('./routes/movies');
+
+// Import genres route
+const genresRoutes = require('./routes/genres');
+
+// Import userGenres route
+const userGenresRoutes = require('./routes/userGenres');
 
 const app = express()
 
@@ -30,7 +36,16 @@ app.get('/', (req, res) => {
 app.use('/auth', authRoutes);
 
 // Swipe routes
+//app.use('/movies', movieRoutes);
+
+// Movies routes
 app.use('/movies', movieRoutes);
+
+// Genres routes
+app.use('/genres', genresRoutes);
+
+// User <-> Genre preference
+app.use('/user/genres', userGenresRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
