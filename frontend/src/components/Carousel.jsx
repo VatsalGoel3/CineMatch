@@ -2,33 +2,42 @@ import { useEffect, useState } from 'react';
 import './Carousel.css';
 
 export default function Carousel({ movies }) {
-  // 'movies' could be an array of movie objects (title, posterPath, etc.)
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % movies.length);
-    }, 3000); // rotate every 3s
-    return () => clearInterval(intervalId);
-  }, [movies]);
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % movies.length);
+  };
 
-  if (!movies || movies.length === 0) {
-    return <div className="carousel-container">No movies to show</div>;
-  }
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === 0 ? movies.length - 1 : prevIndex - 1
+    );
+  };
 
-  const currentMovie = movies[currentIndex];
-
-  return (
-    <div className="carousel-container">
-      <img
-        className="carousel-image"
-        src={currentMovie.posterPath || '/placeholder_poster.jpg'}
-        alt={currentMovie.title}
-      />
-      <div className="carousel-info">
-        <h3>{currentMovie.title}</h3>
-        <p>{currentMovie.overview?.substring(0, 100)}...</p>
-      </div>
-    </div>
-  );
+ return (
+        <div className="carousel">
+            <button className="carousel-btn prev" onClick={handlePrev}>
+                &#8592;
+            </button>
+            <div className="carousel-content">
+                {movies.map((movie, index) => (
+                    <div
+                        key={movie.id}
+                        className={`carousel-card ${
+                            index === currentIndex ? "active" : "inactive"
+                        }`}
+                    >
+                        <img src={movie.poster} alt={movie.title} />
+                        <div className="card-info">
+                            <h3>{movie.title}</h3>
+                            <p>{new Date(movie.release_date).getFullYear()}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <button className="carousel-btn next" onClick={handleNext}>
+                &#8594;
+            </button>
+        </div>
+    );
 }

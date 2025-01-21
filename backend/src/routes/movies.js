@@ -92,4 +92,27 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
     }
 });
 
+// GET /movies/trending
+// Returns top 5 trending movies sorted by popularity
+router.get('/trending', async (req, res) => {
+    try {
+        const trendingMovies = await Movie.find()
+            .sort({ popularity: -1 })
+            .limit(5)
+            .exec();
+
+        const movies = trendingMovies.map(movie => ({
+            id: movie._id,
+            title: movie.title,
+            poster: movie.posterPath ? `https://image.tmdb.org/t/p/w500${movie.posterPath}` : '',
+            release_date: movie.releaseDate
+        }));
+
+        return res.status(200).json({ data: movies });
+    } catch (err) {
+        console.error('Error fetching trending movies:', err);
+        return res.status(500).json({ msg: 'Server erorr fetching trending movies.'})
+    }
+});
+
 module.exports = router;

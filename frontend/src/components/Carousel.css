@@ -1,25 +1,101 @@
-.carousel-container {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: 1rem auto;
-    overflow: hidden;
-    background-color: #000;
+/* General Carousel Styles */
+.carousel {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 350px;
+  overflow: hidden;
+  background-color: #121212; /* Dark background for cinematic effect */
+}
+
+.carousel-content {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  transform: translateX(-100%);
+}
+
+.carousel-card {
+  flex: 0 0 20%; /* Each card takes up 20% of the width */
+  margin: 0 10px;
+  text-align: center;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0.6;
+  padding: 10rem;
+}
+
+.carousel-card.active {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.carousel-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+
+.card-info {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: left;
+  width: calc(100% - 20px);
+}
+
+.card-info h3 {
+  font-size: 1rem;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-info p {
+  margin: 5px 0 0;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.carousel-btn.prev {
+  left: 10px;
+}
+
+.carousel-btn.next {
+  right: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .carousel-card {
+      flex: 0 0 40%; /* Show fewer cards on smaller screens */
   }
-  
-  .carousel-image {
-    display: block;
-    width: 100%;
-    height: auto;
+
+  .card-info h3 {
+      font-size: 0.8rem;
   }
-  
-  .carousel-info {
-    position: absolute;
-    bottom: 0;
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    width: 100%;
-    padding: 0.5rem;
-    box-sizing: border-box;
+
+  .card-info p {
+      font-size: 0.7rem;
   }
-  
+}
