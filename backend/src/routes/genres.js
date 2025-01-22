@@ -1,12 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { query, validationResult } = require('express-validator');
+const { validationResult } = require('express-validator');
 
 const Genre = require('../models/Genre');
 
+const backendBaseURL = process.env.BACKEND_BASE_URL || 'http://localhost:3000';
+
+const genreImageMap = {
+    "Action": "action.jpg",
+    "Adventure": "adventure.jpg",
+    "Animation": "animation.jpg",
+    "Comedy": "comedy.jpg",
+    "Crime": "crime.jpg",
+    "Documentary": "documentary.jpg",
+    "Drama": "drama.jpg",
+    "Family": "family.jpg",
+    "Fantasy": "fantasy.jpg",
+    "History": "history.jpg",
+    "Horror": "horror.jpg",
+    "Music": "music.jpg",
+    "Mystery": "mystery.jpg",
+    "Romance": "romance.jpg",
+    "Science Fiction": "sci-fi.jpg",
+    "TV Movie": "tv-movie.jpg",
+    "Thriller": "thriller.jpg",
+    "War": "war.jpg",
+    "Western": "western.jpg"
+  };
+
 // GET /genres/populate
-// Fetch from TMDB -> store in our DB
+// Fetch genres from TMDB and store them along with their top movie data
 router.get('/populate', async (req, res) => {
     try {
         const apiKey = process.env.TMDB_API_KEY;
@@ -15,10 +39,10 @@ router.get('/populate', async (req, res) => {
         }
 
         // TMDB genre list endpoint
-        const tmdbUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`;
+        const tmdbGenreUrl = `https://api.themoviedb.org/3/genre/movie/list?api_key=${apiKey}&language=en-US`;
 
-        const response = await axios.get(tmdbUrl);
-        const genres = response.data.genres;
+        const genreResponse = await axios.get(tmdbGenreUrl);
+        const genres = genreResponse.data.genres;
 
         if (!genres || genres.length === 0) {
             return res.status(404).json({ msg: 'No genres found in TMDB response' });
@@ -26,44 +50,38 @@ router.get('/populate', async (req, res) => {
 
         let upsertCount = 0;
 
-        for (const g of genres) {
-            // Upsert each genre by tmdbId
+        // Use Promise.all to fetch top movies concurrently for better performance
+        await Promise.all(genres.map(async (g) => {
             const filter = { tmdbId: g.id };
             let update = { name: g.name };
 
+            // Check if genre already has top movie data
             const existingGenre = await Genre.findOne(filter);
 
             if (!existingGenre || !existingGenre.topMoviePoster) {
-                const tmdbTopMovieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${g.id}&sort_by=popularity.desc&language=en-US&page=1`;
-                const topMovieResponse = await axios.get(tmdbTopMovieUrl);
-                const topMovie = topMovieResponse.data.results[0];
-                
-                if (topMovie) {
-                    update.topMoviePoster = topMovie.poster_path
-                        ? `https://image.tmdb.org/t/p/w500${topMovie.poster_path}`
-                        : '';
-                    update.topMovieTitle = topMovie.title || '';
-                    update.topMovieReleaseDate = topMovie.release_date || '';
+                // Assign image paths based on genreImageMap
+                const imageFileName = genreImageMap[g.name];
+                if (imageFileName) {
+                    update.topMoviePoster = `${backendBaseURL}/assets/posters/${imageFileName}`;
                 }
             } else {
+                // Preserve existing top movie data
                 update.topMoviePoster = existingGenre.topMoviePoster;
-                update.topMovieTitle = existingGenre.topMovieTitle;
-                update.topMovieReleaseDate = existingGenre.topMovieReleaseDate;
             }
 
             const options = { upsert: true, new: true };
             const upserted = await Genre.findOneAndUpdate(filter, update, options);
             if (upserted) upsertCount++;
-        }
+        }));
 
         return res.status(200).json({
-            msg : 'Genres fetched & stored successfully',
+            msg: 'Genres fetched & stored successfully',
             totalFetched: genres.length,
             upserted: upsertCount
         });
     } catch (error) {
-        console.error('Genre Populate Error:', error);
-        return res.status(500).json({ msg: 'Server error occured' });
+        console.error('Genre Populate Error:', error.response?.data || error.message);
+        return res.status(500).json({ msg: 'Server error occurred' });
     }
 });
 

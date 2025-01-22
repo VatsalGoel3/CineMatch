@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express')
 const cors = require('cors')
 const mongoose = require('mongoose')
+const path = require('path');
 
 // Import auth route
 const authRoutes = require('./routes/auth');
@@ -23,6 +24,9 @@ const app = express()
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Server static assets
+app.use('/assets', express.static(path.join(__dirname, 'public', 'assets')));
 
 // Connect to MongoDB
 const dbUri = process.env.MONGO_URI || 'mongodb://localhost:27017/CineMatch';
