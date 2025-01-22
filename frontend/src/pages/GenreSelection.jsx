@@ -47,6 +47,7 @@ export default function GenreSelection() {
             const res = await api.post('/user/genres', { genreIds: selectedGenres });
             alert('Genres saved successfully!');
             // Redirect or update UI as needed
+            window.location.href = '/swipe';
         } catch (err) {
             console.error('Error saving genres:', err);
             setErrorMsg(err.response?.data?.msg || 'Failed to save genres.');
@@ -65,8 +66,15 @@ export default function GenreSelection() {
                         key={genre._id}
                         className={`genre-card ${selectedGenres.includes(genre._id) ? 'selected' : ''}`}
                         onClick={() => toggleGenreSelection(genre._id)}
+                        style={{
+                            backgroundImage: genre.topMoviePoster ? `url(${genre.topMoviePoster})` : 'none',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                        }}
                     >
-                        {genre.name}
+                        <div className="genre-overlay">
+                            <span>{genre.name}</span>
+                        </div>
                     </div>
                 ))}
             </div>

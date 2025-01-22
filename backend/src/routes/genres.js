@@ -25,12 +25,33 @@ router.get('/populate', async (req, res) => {
         }
 
         let upsertCount = 0;
+
         for (const g of genres) {
             // Upsert each genre by tmdbId
             const filter = { tmdbId: g.id };
-            const update = { name: g.name };
-            const options = { upsert: true, new: true };
+            let update = { name: g.name };
 
+            const existingGenre = await Genre.findOne(filter);
+
+            if (!existingGenre || !existingGenre.topMoviePoster) {
+                const tmdbTopMovieUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${apiKey}&with_genres=${g.id}&sort_by=popularity.desc&language=en-US&page=1`;
+                const topMovieResponse = await axios.get(tmdbTopMovieUrl);
+                const topMovie = topMovieResponse.data.results[0];
+                
+                if (topMovie) {
+                    update.topMoviePoster = topMovie.poster_path
+                        ? `https://image.tmdb.org/t/p/w500${topMovie.poster_path}`
+                        : '';
+                    update.topMovieTitle = topMovie.title || '';
+                    update.topMovieReleaseDate = topMovie.release_date || '';
+                }
+            } else {
+                update.topMoviePoster = existingGenre.topMoviePoster;
+                update.topMovieTitle = existingGenre.topMovieTitle;
+                update.topMovieReleaseDate = existingGenre.topMovieReleaseDate;
+            }
+
+            const options = { upsert: true, new: true };
             const upserted = await Genre.findOneAndUpdate(filter, update, options);
             if (upserted) upsertCount++;
         }

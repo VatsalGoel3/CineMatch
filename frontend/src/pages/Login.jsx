@@ -16,7 +16,12 @@ export default function Login() {
             const res = await api.post('/auth/login', { email, password });
             const { token, user } = res.data;
             login(user, token);
-            navigate('/');
+
+            if (user.preferredGenres.length === 0) {
+              navigate('/select-genres');
+            } else {
+              navigate('/'); // Change to swipe page
+            }
         } catch (err) {
             console.error('Login Error:', err.response?.data || err.message);
             alert(err.response?.data?.msg || 'Login failed');

@@ -12,7 +12,7 @@ const registerValidationRules = [
     body('username')
         .trim()
         .notEmpty().withMessage('Username is required')
-        .isLength({ min: 3 }).withMessage('Usernmae must be at least 3 characters long'),
+        .isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
     body('email')
         .trim()
         .notEmpty().withMessage('Email is required')
@@ -48,10 +48,10 @@ router.post('/register', registerValidationRules, async (req, res) => {
         const { username, email, password } = req.body;
 
         // Check if user or email already exists
-        const exisitingUser = await User.findOne({
+        const existingUser = await User.findOne({
             $or: [{ username }, { email }]
         });
-        if (exisitingUser) {
+        if (existingUser) {
             return res.status(400).json({ msg: 'Username or email already in use.' });
         }
 
@@ -62,7 +62,8 @@ router.post('/register', registerValidationRules, async (req, res) => {
         return res.status(201).json({
             msg: 'User registered successfully!',
             userId: newUser._id,
-            username: newUser.username
+            username: newUser.username,
+            preferredGenres: newUser.preferredgenres
         });
     } catch (error) {
         console.error('Register Error:', error);
@@ -83,9 +84,9 @@ router.post('/login', loginValidationRules, async (req, res) => {
         const { email, password } = req.body;
 
         // Check if user exists
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).populate('preferredGenres');
         if (!user) {
-            return res.status(401).json({ msg: 'Invalid email or password. '});
+            return res.status(401).json({ msg: 'Invalid email or password.'});
         }
 
         // Compare password
@@ -104,7 +105,8 @@ router.post('/login', loginValidationRules, async (req, res) => {
             user: {
                 _id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                preferredGenres: user.preferredGenres
             }
         });
     } catch (error) {

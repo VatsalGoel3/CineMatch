@@ -9,6 +9,18 @@ const genreSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true
+    },
+    topMoviePoster: {
+        type: String,
+        default: ''
+    },
+    topMovieTitle: {
+        type: String,
+        default: ''
+    },
+    topMovieReleaseDate: {
+        type: String,
+        default: ''
     }
 }, { timestamps: true });
 
