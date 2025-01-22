@@ -1,0 +1,59 @@
+.genre-selection-container {
+    padding: 2rem;
+    background-color: #000;
+    color: #eee;
+    text-align: center;
+    min-height: 100vh;
+  }
+  
+  .error-msg {
+    color: #e63946;
+    margin-bottom: 1rem;
+  }
+  
+  .genres-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 1rem 0;
+  }
+  
+  .genre-card {
+    padding: 10px 20px;
+    background-color: #1e1e1e;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+  }
+  
+  .genre-card.selected {
+    border-color: #00ffc8;
+  }
+  
+  .genre-card:hover {
+    border-color: #457b9d;
+  }
+  
+  .submit-btn {
+    margin-top: 1rem;
+    padding: 10px 20px;
+    background-color: #e63946;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .submit-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+  }
+  
+  .submit-btn:hover:not(:disabled) {
+    background-color: #c62828;
+  }
+  

@@ -5,6 +5,7 @@ import AuthProvider from './context/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import GenreSelection from './pages/GenreSelection';
 
 // components
 import Navbar from './components/Navbar';
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/select-genres" element={<GenreSelection />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
