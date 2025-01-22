@@ -1,7 +1,9 @@
+import "./Home.css"
 import { useState, useEffect } from "react";
 import Carousel from "../components/Carousel";
 import api from "../services/api";
 import AdBanner from "../components/AdBanner"
+import Hero from "../components/Hero";
 
 export default function Home() {
     const [movies, setMovies] = useState([]);
@@ -18,23 +20,14 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="home-caontainer">
+        <div className="home-container">
+            <Hero />
             <h2 className="home-title">Trending Movies</h2>
             {movies.length > 0 ? (
                 <Carousel movies={movies} />
             ) : (
                 <p>Loading movies...</p>
             )}
-
-            <AdBanner />
-
-            <section className="home-section">
-                <h3>Welcome to Cinematch</h3>
-                <p>
-                    Swipe through personalized recommendations, track your watched list,
-                    and find your next favorite movie!
-                </p>
-            </section>
         </div>
     );
 }

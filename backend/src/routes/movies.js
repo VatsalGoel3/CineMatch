@@ -93,12 +93,12 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
 });
 
 // GET /movies/trending
-// Returns top 5 trending movies sorted by popularity
+// Returns top 6 trending movies sorted by popularity
 router.get('/trending', async (req, res) => {
     try {
         const trendingMovies = await Movie.find()
             .sort({ popularity: -1 })
-            .limit(5)
+            .limit(6)
             .exec();
 
         const movies = trendingMovies.map(movie => ({
