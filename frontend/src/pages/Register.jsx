@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import './AuthPages.css'
+import './AuthPages.css';
 
 export default function Register() {
     const [username, setUsername] = useState('');
@@ -23,31 +23,33 @@ export default function Register() {
 
     return (
         <div className="auth-container">
-          <h2>Register</h2>
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Username (min 3 chars)"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password (min 8 chars)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button type="submit">Sign Up</button>
-          </form>
+            <div className="auth-form-wrapper">
+                <h2>Register</h2>
+                <form className="auth-form" onSubmit={handleSubmit}>
+                    <input
+                        type="text"
+                        placeholder="Username (min 3 chars)"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    <input
+                        type="password"
+                        placeholder="Password (min 8 chars)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    <button type="submit">Sign Up</button>
+                </form>
+            </div>
         </div>
-      );
+    );
 }
