@@ -7,7 +7,12 @@ export default function Register() {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(prev => !prev);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -40,13 +45,19 @@ export default function Register() {
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
-                    <input
-                        type="password"
-                        placeholder="Password (min 8 chars)"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                    <div className="password-input-wrapper">
+                      <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Password (min 8 chars)"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                      />
+                      <i
+                          className={`fa ${showPassword ? "fa-eye-slash" : "fa-eye"} password-icon`}
+                          onClick={togglePasswordVisibility}
+                      ></i>
+                    </div>
                     <button type="submit">Sign Up</button>
                 </form>
             </div>

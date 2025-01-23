@@ -17,12 +17,17 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true
         },
-        preferredgenres: [
+        preferredGenres: [
             {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Genre'
             }
-        ]
+        ],
+        role: {
+            type: String,
+            enum: ['user', 'admin'],
+            default: 'user'
+        }
     },
     { timestamps: true}
 );

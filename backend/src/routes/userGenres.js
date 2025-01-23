@@ -45,10 +45,10 @@ router.post('/', requireAuth, updateGenresValidation, async (req, res) => {
         return res.status(200).json({
             msg: 'user genres updated',
             user: {
-                _id: updatedUser._id,
-                username: updatedUser.username,
-                email: updatedUser.email,
-                preferredGenres: updatedUser.preferredGenres
+                _id: updateUser._id,
+                username: updateUser.username,
+                email: updateUser.email,
+                preferredGenres: updateUser.preferredGenres
             }
         });
     } catch (error) {

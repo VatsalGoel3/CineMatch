@@ -85,6 +85,30 @@
     transform: scale(0.98);
   }
 
+  .password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;    
+  }
+
+  .password-input-wrapper input {
+    flex: 1;
+    padding-right: 2rem;
+  }
+
+  .password-icon {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 1.2rem;
+    transition: color 0.3s;
+  }
+
+  .password-icon:hover {
+    color: #00ffc8;
+  }
+
   @media (max-width: 768px) {
     .auth-form-wrapper {
       padding: 1.5rem;

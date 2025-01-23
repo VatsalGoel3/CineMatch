@@ -1,7 +1,17 @@
+import { Link, useNavigate } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import './Navbar.css';
-import { Link } from 'react-router-dom';
 
 export default function Navbar() {
+    const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    }
+
     return (
         <nav className='navbar'>
             <div className='navbar-logo'>
@@ -11,9 +21,18 @@ export default function Navbar() {
                 </Link>
             </div>
             <div className='navbar-links'>
-                <a href="/login" className='navbar-link'>Login</a>
-                <span className='divider'>|</span>
-                <a href="/register" className='navbar-link'>Register</a>
+                {!user ? (
+                    <>
+                        <Link to="/login" className='navbar-link'>Login</Link>
+                        <span className='divider'>|</span>
+                        <Link to="/register" className='navbar-link'>Register</Link>
+                    </>
+                ) : (
+                    <>
+                        <span className='navbar-user'>Hello, {user.username}</span>
+                        <button onClick={handleLogout} className='navbar-logout-btn'>Logout</button>
+                    </>
+                )}
             </div>
         </nav>
     );

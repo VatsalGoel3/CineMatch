@@ -26,10 +26,9 @@ const registerValidationRules = [
 // Login Validations
 // =================
 const loginValidationRules = [
-    body('email')
+    body('identifier')
         .trim()
-        .notEmpty().withMessage('Email is required')
-        .isEmail().withMessage('Email is invalid'),
+        .notEmpty().withMessage('Email or Username is required'),
     body('password')
         .notEmpty().withMessage('Password is required')
 ];
@@ -81,12 +80,17 @@ router.post('/login', loginValidationRules, async (req, res) => {
             return res.status(400).json({ msg: 'Validation failed', errors: errors.array() });
         }
 
-        const { email, password } = req.body;
+        const { identifier, password } = req.body;
 
         // Check if user exists
-        const user = await User.findOne({ email }).populate('preferredGenres');
+        const user = await User.findOne({ 
+            $or: [
+                { email: identifier },
+                { username: identifier }
+            ]
+        }).populate('preferredGenres');
         if (!user) {
-            return res.status(401).json({ msg: 'Invalid email or password.'});
+            return res.status(401).json({ msg: 'Invalid email/username or password.' });
         }
 
         // Compare password
@@ -96,7 +100,7 @@ router.post('/login', loginValidationRules, async (req, res) => {
         }
 
         // Generate token
-        const payload = { userId: user._id, username: user.username };
+        const payload = { userId: user._id, username: user.username, role: user.role };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         return res.status(200).json({
@@ -106,14 +110,14 @@ router.post('/login', loginValidationRules, async (req, res) => {
                 _id: user._id,
                 username: user.username,
                 email: user.email,
-                preferredGenres: user.preferredGenres
+                preferredGenres: user.preferredGenres,
+                role: user.role
             }
         });
-    } catch (error) {
-        console.error('Login Error', error);
+    } catch (err) {
+        console.error('Login Error:', err.message, err.stack);
         return res.status(500).json({ msg: 'Server error, please try again.' });
     }
 });
 
 module.exports = router;
-

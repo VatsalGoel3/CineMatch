@@ -9,6 +9,7 @@ import GenreSelection from './pages/GenreSelection';
 
 // components
 import Navbar from './components/Navbar';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
@@ -20,7 +21,17 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/select-genres" element={<GenreSelection />} />
-        </Routes>
+
+          {/* Protect route by authenticating user */}
+          <Route
+            path='/select-genres'
+            element={
+              <PrivateRoute>
+                <GenreSelection />
+              </PrivateRoute>
+            }
+          />
+]        </Routes>
       </BrowserRouter>
     </AuthProvider>
   );

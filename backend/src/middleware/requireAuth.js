@@ -1,26 +1,30 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-module.exports = function requireAuth(req, res, next) {
+const requireAuth = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ msg: 'Unauthorized: No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1];
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader) {
-            return res.status(401).json({ msg: 'No authorization header found '});
-        }
-
-        // Typically "Bearer <token>"
-        const token = authHeader.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ msg: 'Token not found in authorization header '});
-        }
-
-        // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // Attach user data to req
-        req.user = decoded;
-
+        const user = await User.findById(decoded.userId).select('-password');
+        if (!user) {
+            return res.status(401).json({ msg: 'Unauthorized: User not found' });
+        }
+        req.user = {
+            userId: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.role
+        };
         next();
-    } catch (error) {
-        console.error('Auth Error:', error);
-        return res.status(401).json({ msg: 'Invalid or expired token' });
+    } catch (err) {
+        console.error('Auth Middleware Error:', err);
+        return res.status(401).json({ msg: 'Unauthorized: Invalid token' });
     }
 };
+
+module.exports = requireAuth;
