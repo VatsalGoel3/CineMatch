@@ -10,8 +10,8 @@ export default function AuthProvider({ children }) {
         const storedToken = localStorage.getItem('cine_token');
         const storedUser = localStorage.getItem('cine_user');
         if (storedToken && storedUser) {
-            storedToken(storedToken);
-            storedUser(JSON.parse(storedUser));
+            setToken(storedToken);
+            setUser(JSON.parse(storedUser));
         }
     }, []);
 
@@ -25,7 +25,7 @@ export default function AuthProvider({ children }) {
     const logout = () => {
         setUser(null);
         setToken(null);
-        localStorage.removeItem('cine+token');
+        localStorage.removeItem('cine_token');
         localStorage.removeItem('cine_user');
     };
 

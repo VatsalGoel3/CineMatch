@@ -18,7 +18,7 @@ export default function Login() {
             login(user, token);
 
             if (user.preferredGenres.length === 0) {
-              navigate('/select-genres');
+              navigate('/select-genres')
             } else {
               navigate('/'); // Change to swipe page
             }

@@ -61,30 +61,38 @@ export default function GenreSelection() {
   };
 
   return (
-    <div className="genre-selection-container">
-      <h2>Select Your Favorite Genres</h2>
-      {errorMsg && <p className="error-msg">{errorMsg}</p>}
-      <div className="genres-grid">
-        {genres.map((genre) => (
-          <div
-            key={genre._id}
-            className={`genre-card ${selectedGenres.includes(genre._id) ? 'selected' : ''}`}
-            onClick={() => toggleGenreSelection(genre._id)}
-            style={{
-              backgroundImage: genre.topMoviePoster ? `url(${genre.topMoviePoster})` : 'none',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}
-          >
-            <div className="genre-overlay">
-              <span>{genre.name}</span>
+    <div className='page-container'>
+      <div className="genre-selection-container">
+        <h2 className='page-heading'>Customize Your Experience</h2>
+        <p className='instructions'>
+          Select your favorite genres to personalize your movie recommendations. Choose between 5 and 10 genres.
+        </p>
+        {errorMsg && <p className="error-msg">{errorMsg}</p>}
+        <div className="genres-grid">
+          {genres.map((genre) => (
+            <div
+              key={genre._id}
+              className={`genre-card ${selectedGenres.includes(genre._id) ? 'selected' : ''}`}
+              onClick={() => toggleGenreSelection(genre._id)}
+              style={{
+                backgroundImage: genre.topMoviePoster ? `url(${genre.topMoviePoster})` : `url(${backendBaseURL}/assets/posters/default.jpg)`,
+              }}
+            >
+              <div className="genre-overlay">
+                <span>{genre.name}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        <button onClick={handleSubmit} disabled={submitting} className="submit-btn">
+          {submitting ? (
+            <div className='spinner'></div>
+          ) : (
+
+            'Save Selection'
+          )}
+        </button>
       </div>
-      <button onClick={handleSubmit} disabled={submitting} className="submit-btn">
-        {submitting ? 'Submitting...' : 'Save Selection'}
-      </button>
     </div>
   );
 }

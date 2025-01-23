@@ -11,7 +11,7 @@
     box-sizing: border-box;
     padding-top: 70px;
     background: url(../assets/hero-background.jpg);
-  }
+   }
 
   .auth-container::before {
     content: '';
@@ -20,8 +20,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.1); /* Black overlay with reduced opacity */
-    z-index: 1;
+    background: rgba(0, 0, 0, 0.1); 
   }
 
   .auth-form-wrapper {
@@ -33,6 +32,7 @@
     width: 100%;
     text-align: center;
     position: relative;
+    z-index: 2;
   }
 
   .auth-form-wrapper h2 {
