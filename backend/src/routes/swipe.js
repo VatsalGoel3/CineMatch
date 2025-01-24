@@ -1,69 +1,103 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 
 const requireAuth = require('../middleware/requireAuth');
+const User = require('../models/User');
 const Movie = require('../models/Movie');
-const Swipe = require('../models/Swipe');
 
-// ============================
-// Validation Rules for Swiping
-// ============================
-const swipeValidationRules = [
-    body('tmdbId')
-        .notEmpty().withMessage('tmdbId is required')
-        .isNumeric().withMessage('tmdbId must be a number'),
-    body('title')
-        .trim()
-        .notEmpty().withMessage('Movie title is required'),
-    body('swipeType')
-        .trim()
-        .isIn(['like', 'dislike']).withMessage('swipeType must be "like" or "dislike" '),
-    // Add more things to validate   
+// Validation rules
+const swipeValidation = [
+    body('movieId')
+        .notEmpty().withMessage('movieId is required')
+        .custom((val) => mongoose.Types.ObjectId.isValid(val))
+        .withMessage('Invalid movieId'),
+    body('action')
+        .notEmpty().withMessage('action is required')
+        .isIn(['like', 'dislike']).withMessage('action must be either like or dislike')
 ];
 
-// ========================
-// POST /swipe
-// Protected by requireAuth
-// ========================
-router.post('/', requireAuth, swipeValidationRules, async (req, res) => {
+// POST /swipe/action
+// Record like or dislike
+router.post('/action', requireAuth, swipeValidation, async (req, res) => {
     try {
-        // 1. Validate request
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ msg: 'Validation failed', errors: error.array() });
+        }
+
+        const user = await User.findById(userId);
+
+        if (action === 'like') {
+            if (!user.likes.includes(movieId)) {
+                user.likes.push(movieId);
+            }
+
+            user.dislikes = user.dislikes.filter(id => !id.equals(movieId));
+        } else {
+            // action == 'dislike'
+            // Add to dislikes if not present
+            if (!user.dislikes.includes(movieId)) {
+                user.dislikes.push(movieId);
+            }
+            // Remove from likes if present
+            user.likes = user.likes.filter(id => !id.equals(movieId));
+        }
+
+        await user.save();
+        return res.status(200).json({ msg: `Movie ${action}d successfully.` });
+    } catch (err) {
+        console.error('Swipe Error:', err);
+        return res.status(500).json({ msg: 'Server error, please try again.' });
+    }
+});
+
+const watchedValidation = [
+    body('moviedId')
+        .notEmpty().withMessage('movieId is required')
+        .custom((val) => mongoose.Types.ObjectId.isValid(val))
+        .withMessage('Invalid movieId'),
+    body('rating')
+        .notEmpty().withMessage('rating is required')
+        .isInt({ min: 1, max: 5 }).withMessage('rating must be between 1 and 5')
+];
+
+// POST /swipe/watched
+// Record that user watched a movie
+router.post('/watched', requireAuth, watchedValidation, async (req, res) => {
+    try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(400).json({ msg: 'Validation failed', errors: errors.array() });
         }
 
-        const { tmdbId, title, posterUrl, releaseDate, swipeType } = req.body;
+        const { movieId, rating } = req.body;
         const userId = req.user.userId;
 
-        // 2. Ensure the Movie exists or create it
-        let movie = await Movie.findOne({ tmbdId });
+        // Check if movie exits
+        const movie = await Movie.findById(movieId);
         if (!movie) {
-            movie = new Movie({ tmbdId, title, posterUrl, releaseDate });
-            await movie.save();
+            return res.status(404).json({ msg: 'Movie not found' });
         }
 
-        // 3. Upsert the Swipe doc for user+movie
-        //    If a doc exists, update the swipeType. Otherwise, create a new doc.
-        const swipe = await Swipe.findOneAndUpdate(
-            { user: userId, movie: movie._id },
-            { swipeType },
-            { new: true, upsert: true, setDefaultsOnInsert: true }
-        );
+        const user = await User.findById(userId);
 
-        // 4. Return the new or updated swipe doc
-        return res.status(200).json({
-            msg: 'Swipe recorded successfully!',
-            swipe: {
-                _id: swipe._id,
-                user: swipe.user,
-                movie: swipe.movie,
-                swipeType: swipe.swipeType
-            }
-        });
-    } catch (error) {
-        console.error('Swipe Error:', error);
+        // Check if movie is already in watcged
+        const existing = user.wathced.find((w) => w.movieId.equals(movieId));
+        if (exiting) {
+            // Update rating and timestamp
+            existing.rating = rating;
+            existing.watchedAt = Date.now();
+        } else {
+            // Add new watched entry
+            user.wathced.push ({ movieId, rating });
+        }
+
+        await user.save();
+        return res.status(200).json({ msg: 'Watched movie recorded successfully.' });
+    } catch (err) {
+        console.error('Watched Error:', err);
         return res.status(500).json({ msg: 'Server error, please try again.' });
     }
 });
