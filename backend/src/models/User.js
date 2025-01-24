@@ -27,18 +27,39 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ['user', 'admin'],
             default: 'user'
-        }
+        },
+        likes: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Movie'
+        }],
+        dislikes: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Movie'
+        }],
+        wathced: [{
+            movieId: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Movie'
+            },
+            rating: {
+                type: Number,
+                min: 1,
+                max: 5
+            },
+            watchedAt: {
+                type: Date,
+                default: Date.now
+            }
+        }]
     },
     { timestamps: true}
 );
 
-// Pre-save hookl to hash password before saving
+// Pre-save hook to hash password
 userSchema.pre('save', async function (next) {
-    // Only hash if password field is modified
     if (!this.isModified('password')) {
         return next();
     }
-
     try {
         // Hash the password with a salt round of 10
         const hashed = await bcrypt.hash(this.password, 10);
