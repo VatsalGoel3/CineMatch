@@ -4,20 +4,13 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const path = require('path');
 
-// Import auth route
+// Import routes
 const authRoutes = require('./routes/auth');
-
-// Import swiper route
 const swipeRoutes = require('./routes/swipe');
-
-// Import movies route
 const movieRoutes = require('./routes/movies');
-
-// Import genres route
 const genresRoutes = require('./routes/genres');
-
-// Import userGenres route
 const userGenresRoutes = require('./routes/userGenres');
+const swipeRoutes = require('./routes/swipe');
 
 const app = express()
 
@@ -39,20 +32,13 @@ app.get('/', (req, res) => {
     res.send('Welcome to CineMatch API!');
 });
 
-// Auth routes
+// App routes
 app.use('/auth', authRoutes);
-
-// Swipe routes
 app.use('/swipe', swipeRoutes);
-
-// Movies routes
 app.use('/movies', movieRoutes);
-
-// Genres routes
 app.use('/genres', genresRoutes);
-
-// User <-> Genre preference
 app.use('/user/genres', userGenresRoutes);
+app.use('/swipe', swipeRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
