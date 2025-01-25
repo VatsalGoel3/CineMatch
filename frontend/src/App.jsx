@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import GenreSelection from './pages/GenreSelection';
+import SwipePage from './pages/SwipePage';
 
 // components
 import Navbar from './components/Navbar';
@@ -21,6 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/select-genres" element={<GenreSelection />} />
+          <Route path="/swipe" element={<SwipePage />} />
 
           {/* Protect route by authenticating user */}
           <Route

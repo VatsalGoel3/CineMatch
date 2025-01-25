@@ -10,7 +10,6 @@ const swipeRoutes = require('./routes/swipe');
 const movieRoutes = require('./routes/movies');
 const genresRoutes = require('./routes/genres');
 const userGenresRoutes = require('./routes/userGenres');
-const swipeRoutes = require('./routes/swipe');
 
 const app = express()
 
