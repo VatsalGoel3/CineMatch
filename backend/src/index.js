@@ -10,6 +10,7 @@ const swipeRoutes = require('./routes/swipe');
 const movieRoutes = require('./routes/movies');
 const genresRoutes = require('./routes/genres');
 const userGenresRoutes = require('./routes/userGenres');
+const recommendationsRoutes = require('./routes/recommendations');
 
 const app = express()
 
@@ -37,6 +38,7 @@ app.use('/swipe', swipeRoutes);
 app.use('/movies', movieRoutes);
 app.use('/genres', genresRoutes);
 app.use('/user/genres', userGenresRoutes);
+app.use('/movies/recommendations', recommendationsRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
