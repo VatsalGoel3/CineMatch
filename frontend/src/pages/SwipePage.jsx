@@ -26,7 +26,7 @@ export default function SwipePage() {
 
   async function fetchMovies() {
     try {
-      const res = await api.get("/movies/trending");
+      const res = await api.get("/movies/recommendations");
       const movieArray = res.data?.data || [];
       setMovies(movieArray);
       setCurrentIndex(movieArray.length - 1);

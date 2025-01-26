@@ -25,7 +25,7 @@ router.get('/', requireAuth, async (req, res) => {
 
         const likedMovieIds = user.likes.map((m) => m._id.toString());
         const dislikedMovieIds = user.dislikes.map((m) => m._id.toString());
-        const watchedMovieIds = user.watched.map((m) => w.movieId._.id.toString());
+        const watchedMovieIds = user.watched.map((w) => w.movieId._id.toString());
 
         // For test: Only recommend "popular" or "trending" movies and 
         // exclude watched or disliked

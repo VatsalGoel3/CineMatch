@@ -34,7 +34,8 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
         }
 
         // 2. Grab query params (default values if not provided)
-        const page = req.query.page || 1;       // page for TMDB's pagination
+        const startPage = 1;       // page for TMDB's pagination
+        const endPage = 10;
         const language = req.query.language || 'en-US';     // language code
 
         // 3. Prepare TMDB endpoint
@@ -43,46 +44,49 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
             return res.status(500).json({ msg: 'TMDB API Key not configured' });
         }
 
-        const tmdbUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`;
+        // 4. Fetch data from TMDB
+        let totalFetched = 0;
+        let totalUpserted = 0;
 
-        // 4. Fetch data form TMDB
-        const tmdbResponse = await axios.get(tmdbUrl);
-        const results = tmdbResponse.data.results; // array of movies
-        if (!results || results.length === 0) {
-            return res.status(404).json({ msg: 'No movies found in TMDB response' });
-        }
+        for (let page = startPage; page <= endPage; page++) {
+            const tmdbUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`;
 
-        // 5. Iterate through movies, upsert into DB
-        let upsertCount = 0;
-        for (const movie of results) {
-            // Skip items that lack an 'id' field:
-            if (!movie.id) {
-                console.log('Skipping movie with no id:', movie);
+            const tmdbResponse = await axios.get(tmdbUrl);
+            const results = tmdbResponse.data.results; // array of movies
+            if (!results || results.length === 0) {
+                console.log(`No movies found from TMDB on page ${page}`);
                 continue;
             }
-            const filter = { tmdbId: movie.id };
-            const update = {
-                tmdbId: movie.id,
-                title: movie.title,
-                overview: movie.overview,
-                posterPath: movie.poster_path,
-                backdropPath: movie.backdrop_path,
-                releaseDate: movie.release_date,
-                popularity: movie.popularity,
-                voteAverage: movie.vote_average,
-                voteCount: movie.vote_count
-            };
-            const options = { upsert: true, new: true };
-            // upsert = create if not found, otherwise update
-            const upserted = await Movie.findOneAndUpdate(filter, update, options);
-            if (upserted) upsertCount++;
+
+            totalFetched += results.length;
+
+            // 5. Iterate through movies, upsert into DB
+            for (const movie of results) {
+                // Skip items that lack an 'id' field:
+                if (!movie.id) continue;
+                const filter = { tmdbId: movie.id };
+                const update = {
+                    tmdbId: movie.id,
+                    title: movie.title,
+                    overview: movie.overview,
+                    posterPath: movie.poster_path,
+                    backdropPath: movie.backdrop_path,
+                    releaseDate: movie.release_date,
+                    popularity: movie.popularity,
+                    voteAverage: movie.vote_average,
+                    voteCount: movie.vote_count
+                };
+                const options = { upsert: true, new: true };
+                const upserted = await Movie.findOneAndUpdate(filter, update, options);
+                if (upserted) totalUpserted++;
+            }
         }
 
         // 6. Return summary
         return res.status(200).json({
             msg: 'Movies fetched & stored successfully',
-            totalFetched: results.length,
-            upserted: upsertCount
+            totalFetched,
+            upserted: totalUpserted
         });
     
     } catch (error) {
