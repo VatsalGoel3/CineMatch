@@ -74,7 +74,8 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
                     releaseDate: movie.release_date,
                     popularity: movie.popularity,
                     voteAverage: movie.vote_average,
-                    voteCount: movie.vote_count
+                    voteCount: movie.vote_count,
+                    genreIds: movie.genre_ids
                 };
                 const options = { upsert: true, new: true };
                 const upserted = await Movie.findOneAndUpdate(filter, update, options);
