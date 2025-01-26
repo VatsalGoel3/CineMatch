@@ -14,7 +14,6 @@
     width: 350px;
     height: 550px;
     border-radius: 10px;
-    cursor: pointer;
     overflow: hidden;
     display: flex;
     align-items: flex-end;
@@ -65,17 +64,6 @@
     z-index: 2;
   }
   
-  .infoText {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 8px 12px;
-    border-radius: 4px;
-    color: #fff;
-    transition: opacity 0.3s ease;
-  }
-  
   .buttons-container {
     display: flex;
     justify-content: center;
@@ -86,12 +74,12 @@
   .action-btn {
     width: 60px;
     height: 60px;
-    border: none;
+    border: 10px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 22px;
     color: #fff;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
@@ -128,16 +116,16 @@
   .star-icon {
     font-size: 2rem;
     margin: 5px;
-    color: #888; /* default color */
+    margin-bottom: 20px;
+    color: #888;
     cursor: pointer;
     transition: color 0.3s;
   }
   
   .star-icon.filled {
-    color: #ffc107; /* gold star for filled */
+    color: #ffc104; 
   }
   
-  /* Modal overlay for rating */
   .rating-modal-overlay {
     position: fixed;
     top: 0;
@@ -169,7 +157,7 @@
   .rating-buttons {
     display: flex;
     justify-content: space-around;
-    margin-top: 1rem;
+    margin-bottom: 10px;
   }
   
   .rating-buttons button {

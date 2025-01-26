@@ -154,10 +154,6 @@ export default function SwipePage() {
         ))}
       </div>
 
-      {lastDirection && (
-        <h2 className="infoText">You swiped {lastDirection}</h2>
-      )}
-
       <div className="buttons-container">
         <button 
           className="action-btn dislike"
