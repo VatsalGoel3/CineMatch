@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Movie'
         }],
-        wathced: [{
+        watched: [{
             movieId: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: 'Movie'
@@ -62,7 +62,7 @@ userSchema.pre('save', async function (next) {
     }
     try {
         // Hash the password with a salt round of 10
-        const hashed = await bcrypt.hash(this.password, 10);
+        const hashed = await bcrypt.hash(this.password, 10)
         this.password = hashed;
         next();
     } catch (err) {

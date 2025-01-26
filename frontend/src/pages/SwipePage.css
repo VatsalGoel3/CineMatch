@@ -123,6 +123,65 @@
   .action-btn.watched:hover {
     background-color: #1976d2;
   }
+
+  .star-icon {
+    font-size: 2rem;
+    margin: 5px;
+    color: #888; /* default color */
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  
+  .star-icon.filled {
+    color: #ffc107; /* gold star for filled */
+  }
+  
+  /* Modal overlay for rating */
+  .rating-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .rating-modal-content {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    width: 300px;
+    color: #fff;
+  }
+  
+  .stars-container {
+    display: flex;
+    justify-content: center;
+    margin: 1rem 0;
+  }
+  
+  .rating-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 1rem;
+  }
+  
+  .rating-buttons button {
+    background-color: #2196f3;
+    border: none;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .rating-buttons button:hover {
+    background-color: #1976d2;
+  }
   
   @media (max-width: 768px) {
     .card-container {

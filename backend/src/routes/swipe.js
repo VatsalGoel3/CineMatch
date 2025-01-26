@@ -24,11 +24,13 @@ router.post('/action', requireAuth, swipeValidation, async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({ msg: 'Validation failed', errors: error.array() });
+            return res.status(400).json({ msg: 'Validation failed', errors: errors.array() });
         }
 
-        const user = await User.findById(userId);
+        const { movieId, action } = req.body;
+        const userId = req.user.userId;
 
+        const user = await User.findById(userId);
         if (action === 'like') {
             if (!user.likes.includes(movieId)) {
                 user.likes.push(movieId);
@@ -54,7 +56,7 @@ router.post('/action', requireAuth, swipeValidation, async (req, res) => {
 });
 
 const watchedValidation = [
-    body('moviedId')
+    body('movieId')
         .notEmpty().withMessage('movieId is required')
         .custom((val) => mongoose.Types.ObjectId.isValid(val))
         .withMessage('Invalid movieId'),
@@ -75,7 +77,7 @@ router.post('/watched', requireAuth, watchedValidation, async (req, res) => {
         const { movieId, rating } = req.body;
         const userId = req.user.userId;
 
-        // Check if movie exits
+        // Check if movie exists
         const movie = await Movie.findById(movieId);
         if (!movie) {
             return res.status(404).json({ msg: 'Movie not found' });
@@ -84,14 +86,14 @@ router.post('/watched', requireAuth, watchedValidation, async (req, res) => {
         const user = await User.findById(userId);
 
         // Check if movie is already in watcged
-        const existing = user.wathced.find((w) => w.movieId.equals(movieId));
-        if (exiting) {
+        const existing = user.watched.find((w) => w.movieId.equals(movieId));
+        if (existing) {
             // Update rating and timestamp
             existing.rating = rating;
             existing.watchedAt = Date.now();
         } else {
             // Add new watched entry
-            user.wathced.push ({ movieId, rating });
+            user.watched.push({ movieId, rating });
         }
 
         await user.save();

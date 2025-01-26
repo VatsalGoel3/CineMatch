@@ -37,7 +37,6 @@ app.use('/swipe', swipeRoutes);
 app.use('/movies', movieRoutes);
 app.use('/genres', genresRoutes);
 app.use('/user/genres', userGenresRoutes);
-app.use('/swipe', swipeRoutes);
 
 // Start server
 const PORT = process.env.PORT || 3000;
