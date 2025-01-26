@@ -16,30 +16,55 @@ router.get('/', requireAuth, async (req, res) => {
         const user = await User.findById(userId)
             .populate('likes')
             .populate('dislikes')
-            .populate('watched.movieId');
+            .populate('watched.movieId')
+            .populate({
+                path: 'preferredGenres',
+                select: 'tmdbId',
+            });
         if(!user) {
             return res.status(404).json ({ msg: 'User not found'});
         }
 
         // Basic approach: Check user's liked movies -> find similar
+        // Intermediate approach: Add weights
+        //      1) likes => +3
+        //      2) dislikes => exclude
+        //      3) watched => exclude (Upgrade to a weighting approach based on stars)
+        //      4) preferredGenres => +2
 
-        const likedMovieIds = user.likes.map((m) => m._id.toString());
-        const dislikedMovieIds = user.dislikes.map((m) => m._id.toString());
-        const watchedMovieIds = user.watched.map((w) => w.movieId._id.toString());
+        // For user's preferredGenres, filter movies that match those genres
 
-        // For test: Only recommend "popular" or "trending" movies and 
-        // exclude watched or disliked
-        const allMovies = await Movie.find().sort({ popularity: -1 }).limit(30).exec();
+        const allMovies = await Movie.find().sort({ popularity: -1 }).exec();
+        // Loading large chunk of movies | Change by .limit()
 
-        const recommend = allMovies.filter((movie) => {
+        const dislikedIds = user.dislikes.map((m) => m._id.toString());
+        const watchedIds = user.watched.map((w) => w.movieId._id.toString());
+        const preferredGenresTmdbIds = user.preferredGenres.map((g) => g.tmdbId);
+
+        // Implementing Filtering
+        // Stage 1: exclude disliked or watched
+        let filtered = allMovies.filter((movie) => {
             const idStr = movie._id.toString();
-            if (dislikedMovieIds.includes(idStr)) return false;
-            if (watchedMovieIds.includes(idStr)) return false;
+            if (dislikedIds.includes(idStr)) return false;
+            if (watchedIds.includes(idStr)) return false;
             return true;
-        });
+        })
 
-        // Return top 10 recommended for test
-        const finalRecs = recommend.slice(0, 10).map((movie) => ({
+        
+        // Stage 2: Keep movies that match at least one of the user 
+        // preferred genres
+        if (preferredGenresTmdbIds.length > 0) {
+            filtered = filtered.filter((movie) => {
+                const overlap = movie.genreIds?.some((gid) =>
+                    preferredGenresTmdbIds.includes(gid)
+            );
+                return overlap;
+            });
+        }
+        
+
+        // Return top 20
+        const finalRecs = filtered.slice(0, 20).map((movie) => ({
             id: movie._id,
             title: movie.title,
             poster: movie.posterPath
