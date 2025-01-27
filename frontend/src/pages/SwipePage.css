@@ -171,6 +171,17 @@
   .rating-buttons button:hover {
     background-color: #1976d2;
   }
+
+  .out-of-cards {
+    text-align: center;
+    margin-top: 40px;
+    color: #fff;
+  }
+  
+  .out-of-cards h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
   
   @media (max-width: 768px) {
     .card-container {

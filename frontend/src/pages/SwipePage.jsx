@@ -17,6 +17,8 @@ export default function SwipePage() {
   const [pendingWatchedMovieId, setPendingWatchedMovieId] = useState(null);
   const [pendingUpIndex, setPendingUpIndex] = useState(null);
 
+  const [allSwiped, setAllSwiped] = useState(false);
+
   // Refs to each card (for programmatic removal)
   const childRefs = useRef([]);
 
@@ -61,10 +63,11 @@ export default function SwipePage() {
     setLastDirection(dir);
   };
 
-  const onCardLeftScreen = (title, idx) => {
-    // If an actual swipe occurs, in theory the card leaves screen,
-    // but we won't rely on that for our main logic.
-  };
+  useEffect(() => {
+    if (currentIndex < 0 && movies.length > 0) {
+      setAllSwiped(true);
+    }
+  }, [currentIndex, movies]);
 
   async function buttonSwipe(dir) {
     if (currentIndex < 0) return;
@@ -134,7 +137,9 @@ export default function SwipePage() {
     <div className="swipe-page">
       <h1>Swipe Movies</h1>
 
-      <div className="card-container">
+      {!allSwiped && (
+      <>
+        <div className="card-container">
         {movies.map((movie, index) => (
           <TinderCard
             key={movie.id}
@@ -148,13 +153,13 @@ export default function SwipePage() {
               className="card"
               style={{ backgroundImage: `url(${movie.poster || ""})` }}
             >
-              <h3>{movie.title}</h3>
-            </div>
-          </TinderCard>
-        ))}
-      </div>
+                <h3>{movie.title}</h3>
+              </div>
+            </TinderCard>
+          ))}
+        </div>
 
-      <div className="buttons-container">
+        <div className="buttons-container">
         <button 
           className="action-btn dislike"
           onClick={() => buttonSwipe("left")}
@@ -174,6 +179,15 @@ export default function SwipePage() {
           <i className="fa-solid fa-thumbs-up"></i>
         </button>
       </div>
+      </>
+      )}
+
+      {allSwiped && (
+        <div className="out-of-cards">
+          <h2>You've swiped all recommended movies!</h2>
+          <p>Come back later for more.</p>
+        </div>
+      )}
 
       {showRating && (
         <div className="rating-modal-overlay">
