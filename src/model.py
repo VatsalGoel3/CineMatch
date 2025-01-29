@@ -2,10 +2,9 @@ import numpy as np
 from lightfm import LightFM
 from lightfm.data import Dataset
 from scipy.sparse import save_npz, load_npz
-
 import pickle
 import os
-from.config import Config
+from .config import Config
 
 class RecommenderModel:
     def __init__(self):
@@ -13,12 +12,16 @@ class RecommenderModel:
         self.dataset = None
         self.model = None
         self.item_features = None
-        self.user_id_map = None
-        self.item_id_map = None
+        # Initialize mapping dictionaries
+        self.user_external_to_internal = {}
+        self.user_internal_to_external = {}
+        self.item_external_to_internal = {}
+        self.item_internal_to_external = {}
 
     def _build_features(self, item_features_data):
-        """Build advanced item features (genres, decade bins, popularity bins)
-            Returns a list of (itemId, [feature1, feature2, ...])
+        """
+        Build advanced item features (genres, decade bins, popularity bins).
+        Returns a list of (itemId, [feature1, feature2, ...]).
         """
         features = []
         for item in item_features_data:
@@ -36,7 +39,7 @@ class RecommenderModel:
                 decade = (year // 10) * 10
                 feats.append(f'decade_{decade}s')
 
-            # Popularit binding
+            # Popularity binning
             popularity = item.get('popularity', 0)
             if popularity > 75:
                 feats.append('popularity_high')
@@ -47,17 +50,13 @@ class RecommenderModel:
 
             features.append((item_id, feats))
         return features
-    
+
     def _transform_rating(self, rating):
         """
-        Convert raw rating (1.5) to a confidence-like weight using logistic curve.
-        rating=1 => ~0.27
-        rating=3 => ~0.50
-        rating=5 => ~0.73
-        Modify slope or offset as needed
+        Convert raw rating (1..5) to a confidence-like weight using a logistic curve.
         """
         return 1.0 / (1.0 + np.exp(-0.5 * (rating - 3.0)))
-    
+
     def train(self, user_interactions, item_features_data):
         """
         Main training function:
@@ -92,7 +91,7 @@ class RecommenderModel:
         )
 
         # 3) Build interactions
-        interactions, weight = self.dataset.build_interactions(
+        interactions, weights = self.dataset.build_interactions(
             (
                 ui['userId'],
                 ui['itemId'],
@@ -122,23 +121,29 @@ class RecommenderModel:
             )
             print(f">>> Completed epoch {epoch+1}")
 
-        # Store user/item mappding for predictin
-        (self.user_id_map, self.item_id_map) = self.dataset.mapping()
-    
+        # 7) Store user/item mapping for prediction
+        user_id_map, _, item_id_map, _ = self.dataset.mapping()
+        
+        # LightFM returns dictionaries directly for the mappings
+        self.user_external_to_internal = user_id_map
+        self.user_internal_to_external = {v: k for k, v in user_id_map.items()}
+        self.item_external_to_internal = item_id_map
+        self.item_internal_to_external = {v: k for k, v in item_id_map.items()}
+
     def recommend(self, user_id, num_items=20):
         """
-        Recommend top N items for a given user.
+        Recommend top N items for a given user,
         filtering out items the user has already interacted with.
         """
         if not self.model or not self.dataset:
             raise ValueError("Model not trained yet.")
 
         # Convert user_id to internal ID
-        if user_id not in self.user_id_map[0]:
+        if user_id not in self.user_external_to_internal:
             raise ValueError("User not found in the dataset. Train again with this user data.")
-        
-        user_internal = self.dataset._user_id_mapping[user_id]
-        n_items = len(self.dataset._item_id_mapping)
+
+        user_internal = self.user_external_to_internal[user_id]
+        n_items = len(self.item_internal_to_external)
 
         # Predict scores for all items
         scores = self.model.predict(
@@ -147,29 +152,30 @@ class RecommenderModel:
             item_features=self.item_features
         )
 
-        # Sort item indexeds by descending score
+        # Sort item indexes by descending score
         ranked_items = np.argsort(-scores)
 
         # Map back to external IDs
-        rev_item_map = {v: k for k, vi in self.dataset._item_id_mapping.items()}
-        recommend = []
-        for iidx in ranked_items:
-            external_id = rev_item_map[iidx]
-            recommend.append(external_id)
-            if len(recommend) >= num_items:
+        recommendations = []
+        for item_internal_id in ranked_items:
+            external_id = self.item_internal_to_external.get(item_internal_id)
+            if external_id:
+                recommendations.append(external_id)
+            if len(recommendations) >= num_items:
                 break
-        
-        return recommend
-    
+
+        return recommendations
+
     def save(self, model_path=None, dataset_path=None, item_features_path=None):
+        """Optional: Save the model and dataset to disk."""
         model_path = model_path or self.config.MODEL_FILE
         dataset_path = dataset_path or self.config.DATASET_FILE
         item_features_path = item_features_path or self.config.ITEM_FEATURES_FILE
 
-        # Save model 
+        # Save model
         with open(model_path, 'wb') as f:
             pickle.dump(self.model, f)
-        
+
         # Save dataset
         with open(dataset_path, 'wb') as f:
             pickle.dump(self.dataset, f)
@@ -178,6 +184,7 @@ class RecommenderModel:
         save_npz(item_features_path, self.item_features)
 
     def load(self, model_path=None, dataset_path=None, item_features_path=None):
+        """Optional: Load the model and dataset from disk."""
         model_path = model_path or self.config.MODEL_FILE
         dataset_path = dataset_path or self.config.DATASET_FILE
         item_features_path = item_features_path or self.config.ITEM_FEATURES_FILE
@@ -193,5 +200,9 @@ class RecommenderModel:
         # Load item_features
         self.item_features = load_npz(item_features_path)
 
-        (self.user_id_map, self.item_id_map) = self.dataset.mapping()
-    
+        # Store mappings
+        user_mapping, item_mapping = self.dataset.mapping()
+        self.user_external_to_internal = user_mapping[0]
+        self.user_internal_to_external = user_mapping[1]
+        self.item_external_to_internal = item_mapping[0]
+        self.item_internal_to_external = item_mapping[1]

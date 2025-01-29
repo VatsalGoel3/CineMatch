@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
 import traceback
-from datatime import datetime, timedelta
+from datetime import datetime, timedelta
 from .model import RecommenderModel
 
 app = Flask(__name__)
 
-# Glogabal (singleton) model instance
+# Global (singleton) model instance
 model = RecommenderModel()
 
 # Lock/cooldown to prevent repeated training calls
@@ -15,7 +15,7 @@ last_trained_time = datetime.min
 # Simple cooldown: 2 minutes
 TRAIN_COOLDOWN = timedelta(minutes=2)
 
-@app.route('/health',  methods=['GET'])
+@app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({
         "status": "healthy",
@@ -36,18 +36,33 @@ def train():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No JSON data provided"}), 400
-    
-    user_iteractions = data.get('userInteractions', [])
+
+    user_interactions = data.get('userInteractions', [])
     item_features = data.get('itemFeatures', [])
 
-    if not user_iteractions or not item_features:
-        return jsonify({"error": "Missing userInteractioins or itemFeatures"}), 400
-    
+    if not user_interactions or not item_features:
+        return jsonify({"error": "Missing userInteractions or itemFeatures"}), 400
+
     try:
-        training_in_progress: True
-        model.train(user_iteractions, item_features)
+        training_in_progress = True
+        # Transform interactions to the format expected by LightFM
+        transformed_interactions = []
+        for interaction in user_interactions:
+            transformed_interactions.append({
+                "userId": interaction['userId'],
+                "itemId": interaction['itemId'],
+                "rating": interaction['rating']
+            })
+
+        # Train the model
+        model.train(transformed_interactions, item_features)
         last_trained_time = datetime.utcnow()
-        return jsonify({"status": "trained", "trained_at": last_trained_time.isoformat()})
+
+        return jsonify({
+            "status": "trained",
+            "trained_at": last_trained_time.isoformat()
+        })
+
     except Exception as e:
         app.logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
@@ -59,18 +74,23 @@ def recommend(user_id):
     """
     GET /recommend/<user_id>?num=10
     """
-    num_items = int(request,args.get('num', 10))
+    try:
+        num_items = int(request.args.get('num', 20))
+    except ValueError:
+        return jsonify({"error": "Invalid 'num' parameter. It must be an integer"}), 400
 
     try:
         recs = model.recommend(user_id, num_items=num_items)
         return jsonify({
             "user_id": user_id,
             "recommendations": recs,
-            "genreated_at": datetime.utcnow().isoformat()
+            "generated_at": datetime.utcnow().isoformat()
         })
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 404
     except Exception as e:
         app.logger.error(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
-    
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
