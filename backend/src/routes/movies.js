@@ -34,9 +34,9 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
         }
 
         // 2. Grab query params (default values if not provided)
-        const startPage = 1;       // page for TMDB's pagination
-        const endPage = 10;
-        const language = req.query.language || 'en-US';     // language code
+        const startPage = 1;       
+        const endPage = 50;        // Increased to fetch 1000 movies (20 movies per page * 50 pages)
+        const language = req.query.language || 'en-US';
 
         // 3. Prepare TMDB endpoint
         const apiKey = process.env.TMDB_API_KEY;

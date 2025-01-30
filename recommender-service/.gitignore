@@ -18,6 +18,12 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Model files
+*.pkl
+*.npz
+*.joblib
+*.log
+
 # Docker
 **/Dockerfile
 docker-compose.yml

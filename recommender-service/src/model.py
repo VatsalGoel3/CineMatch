@@ -59,18 +59,39 @@ class RecommenderModel:
 
     def train(self, user_interactions, item_features_data):
         """
-        Main training function:
-        - Build the dataset
-        - Build interactions
-        - Build item features
-        - Fit LightFM model
+        Main training function that now preserves previous training data
         """
-        # 1) Build item features list
+        try:
+            # Try to load existing data
+            self.load()
+            print("Loaded existing model and training data")
+        except:
+            print("No existing model found, starting fresh")
+            pass
+
+        # Merge new interactions with existing ones if we have previous data
+        if hasattr(self, '_previous_interactions'):
+            # Create a unique key for each interaction
+            existing_interactions = {
+                f"{ui['userId']}_{ui['itemId']}": ui 
+                for ui in self._previous_interactions
+            }
+            
+            # Update/add new interactions
+            for ui in user_interactions:
+                key = f"{ui['userId']}_{ui['itemId']}"
+                existing_interactions[key] = ui
+                
+            # Convert back to list
+            user_interactions = list(existing_interactions.values())
+
+        # Store current interactions for future training
+        self._previous_interactions = user_interactions
+
+        # Continue with existing training logic
         item_features_list = self._build_features(item_features_data)
-
-        # 2) Initialize the LightFM Dataset
         self.dataset = Dataset()
-
+        
         # Unique users and items
         users = {ui['userId'] for ui in user_interactions}
         items = {ui['itemId'] for ui in user_interactions}.union(
@@ -129,6 +150,9 @@ class RecommenderModel:
         self.user_internal_to_external = {v: k for k, v in user_id_map.items()}
         self.item_external_to_internal = item_id_map
         self.item_internal_to_external = {v: k for k, v in item_id_map.items()}
+
+        # After training, save the model and data
+        self.save()
 
     def recommend(self, user_id, num_items=20):
         """
