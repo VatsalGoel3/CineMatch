@@ -20,38 +20,38 @@ const swipeValidation = [
 
 // POST /swipe/action
 // Record like or dislike
-router.post('/action', requireAuth, swipeValidation, async (req, res) => {
+router.post('/action', requireAuth, async (req, res) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ msg: 'Validation failed', errors: errors.array() });
-        }
-
         const { movieId, action } = req.body;
         const userId = req.user.userId;
 
         const user = await User.findById(userId);
-        if (action === 'like') {
-            if (!user.likes.includes(movieId)) {
-                user.likes.push(movieId);
-            }
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
 
-            user.dislikes = user.dislikes.filter(id => !id.equals(movieId));
-        } else {
-            // action == 'dislike'
-            // Add to dislikes if not present
-            if (!user.dislikes.includes(movieId)) {
-                user.dislikes.push(movieId);
-            }
-            // Remove from likes if present
-            user.likes = user.likes.filter(id => !id.equals(movieId));
+        // Update total swipes and last swipe time
+        user.totalSwipes += 1;
+        user.lastSwipeTime = new Date();
+
+        // Handle the action (like/dislike)
+        if (action === 'like') {
+            user.likes.addToSet(movieId);
+            user.dislikes.pull(movieId);
+        } else if (action === 'dislike') {
+            user.dislikes.addToSet(movieId);
+            user.likes.pull(movieId);
         }
 
         await user.save();
-        return res.status(200).json({ msg: `Movie ${action}d successfully.` });
+
+        return res.status(200).json({ 
+            msg: 'Action recorded',
+            totalSwipes: user.totalSwipes
+        });
     } catch (err) {
-        console.error('Swipe Error:', err);
-        return res.status(500).json({ msg: 'Server error, please try again.' });
+        console.error('Swipe Action Error:', err);
+        return res.status(500).json({ msg: 'Server error' });
     }
 });
 

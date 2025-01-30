@@ -15,7 +15,7 @@ router.get('/', requireAuth, async (req, res) => {
     try {
         const userId = req.user.userId;
 
-        // Fetch user info
+        // Fetch user info with all interactions
         const user = await User.findById(userId)
             .populate('likes')
             .populate('dislikes')
@@ -26,24 +26,22 @@ router.get('/', requireAuth, async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        // Count total interactions (likes + dislikes + watched)
-        const totalInteractions = user.likes.length + user.dislikes.length + user.watched.length;
+        // Get all movies user has interacted with
+        const interactedMovieIds = new Set([
+            ...user.likes.map(m => m._id.toString()),
+            ...user.dislikes.map(m => m._id.toString()),
+            ...user.watched.map(w => w.movieId._id.toString())
+        ]);
 
-        // If user has less than SWITCH_TO_AI_AFTER interactions, use weight-based system
-        if (totalInteractions < SWITCH_TO_AI_AFTER) {
-            return await getWeightBasedRecommendations(user, res);
-        }
-
-        // Otherwise, use AI recommendations
-        return await getAIRecommendations(user, res);
+        // Get weight-based recommendations
+        return await getWeightBasedRecommendations(user, interactedMovieIds, res);
     } catch (err) {
         console.error('Recommendation Error:', err);
         return res.status(500).json({ msg: 'Server error, please try again.' });
     }
 });
 
-async function getWeightBasedRecommendations(user, res) {
-    // Existing weight-based logic
+async function getWeightBasedRecommendations(user, interactedMovieIds, res) {
     const genreScore = {};
 
     // Stage 1: user.preferredGenres => +2 each
@@ -70,51 +68,48 @@ async function getWeightBasedRecommendations(user, res) {
         if (!movieDoc || !movieDoc.genreIds) return;
 
         if (rating >= 3) {
-            // rating=3 => +1, rating=4 => +2, rating=5 => +3
             const addScore = rating - 2;
             movieDoc.genreIds.forEach((gId) => {
                 genreScore[gId] = (genreScore[gId] || 0) + addScore;
             });
         } else if (rating > 0) {
-            // rating=1 or 2 => treat it as a "dislike" => for future could do -2 each
             movieDoc.genreIds.forEach((gId) => {
                 genreScore[gId] = (genreScore[gId] || 0) - 2;
             });
         }
     });
 
-    // Stage 4: user.dislike => exclude
-    const dislikedIdsSet = new Set(user.dislikes.map((m) => m._id.toString()));
+    // Load movies from db, excluding already interacted ones
+    const allMovies = await Movie.find({
+        '_id': { $nin: Array.from(interactedMovieIds) }
+    }).sort({ popularity: -1 }).exec();
 
-    // Load a chunk of movies from db
-    const allMovies = await Movie.find().sort({ popularity: -1 }).exec();
-    // Change by .limit()
+    const scoredMovies = allMovies.map((movie) => {
+        let total = 0;
+        if (movie.genreIds && movie.genreIds.length > 0) {
+            movie.genreIds.forEach((gId) => {
+                total += (genreScore[gId] || 0);
+            });
+        }
 
-    const scoredMovies = allMovies
-        .filter((movie) => !dislikedIdsSet.has(movie._id.toString()))
-        .map((movie) => {
-            let total = 0;
-            if (movie.genreIds && movie.genreIds.length > 0) {
-                movie.genreIds.forEach((gId) => {
-                    total += (genreScore[gId] || 0);
-                });
-            }
+        // Add popularity bonus (0.1 to 1 point)
+        total += (movie.popularity || 0) / 100;
 
-            return {
-                id: movie._id,
-                title: movie.title,
-                poster: movie.posterPath
-                    ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
-                    : '',
-                release_date: movie.releaseDate,
-                score: total
-            };
-        });
+        return {
+            id: movie._id,
+            title: movie.title,
+            poster: movie.posterPath
+                ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
+                : '',
+            release_date: movie.releaseDate,
+            score: total
+        };
+    });
 
-    // Stage 5: Sort by final 'score' descending
+    // Sort by final 'score' descending
     scoredMovies.sort((a, b) => b.score - a.score);
 
-    // Stage 6: Return top 20
+    // Return top 20
     const finalRecs = scoredMovies.slice(0, 20);
     
     return res.status(200).json({ 

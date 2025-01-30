@@ -4,7 +4,7 @@ import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import "./SwipePage.css";
 
-const SWIPE_COOLDOWN = 120; // 2 minutes in seconds
+const SWIPE_COOLDOWN = 10; // 2 minutes in seconds
 const SWIPES_BEFORE_COOLDOWN = 20;
 
 export default function SwipePage() {
@@ -79,18 +79,37 @@ export default function SwipePage() {
       console.error("Record Watched Error:", err.response?.data || err.message);
     }
   }
+
+  // Add the missing onCardLeftScreen function
+  const onCardLeftScreen = (title, index) => {
+    if (index !== currentIndex) return; // Only handle current card
+    console.log(`${title} left the screen`);
+  };
+
+  // Add the missing handleRatingCancel function
+  const handleRatingCancel = () => {
+    setShowRating(false);
+    setPendingWatchedMovieId(null);
+    setPendingUpIndex(null);
+  };
+
+  // Update the TinderCard component to properly handle swipes
   const onSwipe = (dir, movieId, index) => {
+    if (index !== currentIndex) return; // Only handle current card
     setLastDirection(dir);
   };
 
   useEffect(() => {
-    if (currentIndex < 0 && movies.length > 0) {
+    if (currentIndex < 0 && movies.length > 0 && !cooldownActive) {
       setAllSwiped(true);
+    } else {
+      setAllSwiped(false);
     }
-  }, [currentIndex, movies]);
+  }, [currentIndex, movies.length, cooldownActive]);
 
   const startCooldownTimer = () => {
     setCooldownActive(true);
+    setAllSwiped(false); // Reset allSwiped when cooldown starts
     if (timerRef.current) clearInterval(timerRef.current);
     
     timerRef.current = setInterval(() => {
@@ -111,7 +130,6 @@ export default function SwipePage() {
     if (cooldownActive) return;
 
     try {
-        // Map the direction to the expected action type
         let action;
         switch(dir) {
             case "left":
@@ -127,31 +145,59 @@ export default function SwipePage() {
         // Record the action
         await recordSwipeAction(movieId, action);
         
-        // Update card position
-        if (childRefs.current[currentIndex]?.current) {
-            childRefs.current[currentIndex].current.swipe(dir);
-            setCurrentIndex(currentIndex - 1);
-            setLastDirection(dir);
-        }
-        
-        // Update swipe count and check for cooldown
+        // Update swipe count
         setSwipeCount(prev => {
             const newCount = prev + 1;
             if (newCount >= SWIPES_BEFORE_COOLDOWN) {
-                // Set cooldown
                 const endTime = Date.now() + (SWIPE_COOLDOWN * 1000);
                 localStorage.setItem('swipeCooldownEnd', endTime.toString());
                 startCooldownTimer();
-                return 0; // Reset count
+                return 0;
             }
             return newCount;
         });
+
+        // Remove single card
+        if (childRefs.current[currentIndex]?.current) {
+            childRefs.current[currentIndex].current.swipe(dir);
+            setCurrentIndex(prev => prev - 1);
+        }
+
     } catch (err) {
         console.error("Swipe Action Error:", err.response?.data || err.message);
     }
   };
 
-  // Update the rating submission to include swipe count
+  // New function to handle training
+  const handleTraining = async () => {
+    try {
+        // Get user's interactions for training
+        const userInteractions = await api.get("/swipe/interactions");
+        const movieFeatures = await api.get("/movies/features");
+
+        // Train the model
+        await api.post("/train", {
+            userInteractions: userInteractions.data,
+            itemFeatures: movieFeatures.data
+        });
+        
+        // Set cooldown
+        const endTime = Date.now() + (SWIPE_COOLDOWN * 1000);
+        localStorage.setItem('swipeCooldownEnd', endTime.toString());
+        startCooldownTimer();
+    } catch (err) {
+        if (err.response?.status === 429) {
+            // Cooldown in effect, get remaining time
+            const remainingSeconds = err.response.data.remaining_seconds;
+            setCooldownTimer(remainingSeconds);
+            startCooldownTimer();
+        } else {
+            console.error("Training Error:", err);
+        }
+    }
+  };
+
+  // Update handleRatingSubmit to use handleTraining
   const handleRatingSubmit = async () => {
     if (pendingWatchedMovieId == null || pendingUpIndex == null) return;
 
@@ -165,13 +211,11 @@ export default function SwipePage() {
             setLastDirection('up');
         }
 
-        // Update swipe count
+        // Update swipe count and check for training
         setSwipeCount(prev => {
             const newCount = prev + 1;
             if (newCount >= SWIPES_BEFORE_COOLDOWN) {
-                const endTime = Date.now() + (SWIPE_COOLDOWN * 1000);
-                localStorage.setItem('swipeCooldownEnd', endTime.toString());
-                startCooldownTimer();
+                handleTraining();
                 return 0;
             }
             return newCount;
@@ -216,8 +260,13 @@ export default function SwipePage() {
             <i className="fas fa-hourglass-half fa-spin"></i>
             <span>{formatTime(cooldownTimer)}</span>
           </div>
-          <p>Taking a break to train AI with your preferences!</p>
-          <p>Come back in a moment for better recommendations.</p>
+          <p>Taking a break! Come back in a moment.</p>
+          <p>This helps us find better movies for you.</p>
+        </div>
+      ) : allSwiped ? (
+        <div className="out-of-cards">
+          <h2>You've swiped all recommended movies!</h2>
+          <p>Come back later for more.</p>
         </div>
       ) : (
         <>
@@ -229,19 +278,19 @@ export default function SwipePage() {
                 className="swipe"
                 onSwipe={(dir) => onSwipe(dir, movie.id, index)}
                 onCardLeftScreen={() => onCardLeftScreen(movie.title, index)}
-                preventSwipe={["left", "right", "down", "up"]} 
+                preventSwipe={["up", "down"]}
               >
                 <div
                   className="card"
                   style={{ backgroundImage: `url(${movie.poster || ""})` }}
                 >
-                    <h3>{movie.title}</h3>
-                  </div>
-                </TinderCard>
-              ))}
-            </div>
+                  <h3>{movie.title}</h3>
+                </div>
+              </TinderCard>
+            ))}
+          </div>
 
-            <div className="buttons-container">
+          <div className="buttons-container">
             <button 
               className="action-btn dislike"
               onClick={() => handleSwipeAction("left", movies[currentIndex].id)}
@@ -266,14 +315,17 @@ export default function SwipePage() {
               <i className="fa-solid fa-thumbs-up"></i>
             </button>
           </div>
-        </>
-      )}
 
-      {allSwiped && (
-        <div className="out-of-cards">
-          <h2>You've swiped all recommended movies!</h2>
-          <p>Come back later for more.</p>
-        </div>
+          <div className="swipe-progress">
+            <span>{SWIPES_BEFORE_COOLDOWN - swipeCount} swipes until break</span>
+            <div className="progress-bar">
+              <div 
+                className="progress-fill" 
+                style={{width: `${(swipeCount / SWIPES_BEFORE_COOLDOWN) * 100}%`}}
+              ></div>
+            </div>
+          </div>
+        </>
       )}
 
       {showRating && (
@@ -285,18 +337,6 @@ export default function SwipePage() {
               <button onClick={handleRatingSubmit}>Submit</button>
               <button onClick={handleRatingCancel}>Cancel</button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {!cooldownActive && (
-        <div className="swipe-progress">
-          <span>{SWIPES_BEFORE_COOLDOWN - swipeCount} swipes until AI training</span>
-          <div className="progress-bar">
-            <div 
-              className="progress-fill" 
-              style={{width: `${(swipeCount / SWIPES_BEFORE_COOLDOWN) * 100}%`}}
-            ></div>
           </div>
         </div>
       )}
