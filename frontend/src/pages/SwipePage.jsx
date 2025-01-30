@@ -30,6 +30,8 @@ export default function SwipePage() {
   const [cooldownTimer, setCooldownTimer] = useState(SWIPE_COOLDOWN);
   const timerRef = useRef(null);
 
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     fetchMovies();
     // Check localStorage for existing cooldown
@@ -48,15 +50,33 @@ export default function SwipePage() {
 
   async function fetchMovies() {
     try {
+      setIsLoading(true);
       const res = await api.get("/movies/recommendations");
       const movieArray = res.data?.data || [];
+      
+      // Preload all images before showing the cards
+      await Promise.all(
+        movieArray.map(movie => {
+          return new Promise((resolve) => {
+            if (!movie.poster) {
+              resolve();
+              return;
+            }
+            const img = new Image();
+            img.src = movie.poster;
+            img.onload = resolve;
+            img.onerror = resolve; // Handle failed loads gracefully
+          });
+        })
+      );
+
       setMovies(movieArray);
       setCurrentIndex(movieArray.length - 1);
-
-      // Create refs for each movie
       childRefs.current = movieArray.map(() => React.createRef());
     } catch (err) {
       console.error("Fetch Movies Error:", err.response?.data || err.message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -254,7 +274,12 @@ export default function SwipePage() {
     <div className="swipe-page">
       <h1>Swipe Movies</h1>
 
-      {cooldownActive ? (
+      {isLoading ? (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading movies...</p>
+        </div>
+      ) : cooldownActive ? (
         <div className="cooldown-container">
           <div className="cooldown-timer">
             <i className="fas fa-hourglass-half fa-spin"></i>
