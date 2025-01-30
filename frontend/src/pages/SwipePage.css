@@ -5,8 +5,13 @@
     align-items: center;
     padding-top: 100px;
     background-color: #000;
-    min-height: 100vh;
+    height: 100vh;
     color: #fff;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
   }
   
   .card-container {
@@ -15,6 +20,7 @@
     height: 550px;
     margin: 0 auto;
     z-index: 1;
+    max-height: calc(100vh - 300px);
   }
   
   .swipe {
@@ -195,7 +201,12 @@
   @media (max-width: 768px) {
     .card-container {
       max-width: 90vw;
-      height: 400px;
+      height: calc(100vh - 350px);
+      margin-top: -20px;
+    }
+  
+    .swipe-page {
+      padding-top: 80px;
     }
   
     .card {

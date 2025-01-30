@@ -29,6 +29,8 @@ export default function Navbar() {
                     </>
                 ) : (
                     <>
+                        <Link to="/swipe" className='navbar-link'>Swipe</Link>
+                        <span className='divider'>|</span>
                         <span className='navbar-user'>Hello, {user.username}</span>
                         <button onClick={handleLogout} className='navbar-logout-btn'>Logout</button>
                     </>

@@ -16,24 +16,30 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-      <Navbar />
-      <Routes>
+        <Navbar />
+        <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/select-genres" element={<GenreSelection />} />
-          <Route path="/swipe" element={<SwipePage />} />
-
-          {/* Protect route by authenticating user */}
+          
+          {/* Protected routes */}
           <Route
-            path='/select-genres'
+            path="/select-genres"
             element={
               <PrivateRoute>
                 <GenreSelection />
               </PrivateRoute>
             }
           />
-]        </Routes>
+          <Route
+            path="/swipe"
+            element={
+              <PrivateRoute>
+                <SwipePage />
+              </PrivateRoute>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
