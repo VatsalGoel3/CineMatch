@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from .model import RecommenderModel
 
 app = Flask(__name__)
@@ -19,7 +19,7 @@ TRAIN_COOLDOWN = timedelta(minutes=2)
 def health_check():
     return jsonify({
         "status": "healthy",
-        "time": datetime.utcnow().isoformat()
+        "time": datetime.now(timezone.utc).isoformat()
     })
 
 @app.route('/train', methods=['POST'])
@@ -29,9 +29,12 @@ def train():
         return jsonify({"error": "Training is already in progress"}), 423
 
     # Check cooldown
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     if now - last_trained_time < TRAIN_COOLDOWN:
-        return jsonify({"error": "Training cooldown in effect"}), 429
+        return jsonify({
+            "error": "Training cooldown in effect",
+            "remaining_seconds": int((TRAIN_COOLDOWN - (now - last_trained_time)).total_seconds())
+        }), 429
 
     data = request.get_json()
     if not data:
@@ -56,7 +59,7 @@ def train():
 
         # Train the model
         model.train(transformed_interactions, item_features)
-        last_trained_time = datetime.utcnow()
+        last_trained_time = datetime.now(timezone.utc)
 
         return jsonify({
             "status": "trained",
@@ -84,7 +87,7 @@ def recommend(user_id):
         return jsonify({
             "user_id": user_id,
             "recommendations": recs,
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": datetime.now(timezone.utc).isoformat()
         })
     except ValueError as ve:
         return jsonify({"error": str(ve)}), 404

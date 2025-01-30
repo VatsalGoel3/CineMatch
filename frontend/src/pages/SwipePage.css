@@ -205,3 +205,57 @@
     }
   }
   
+  .cooldown-container {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(33, 33, 33, 0.9);
+    border-radius: 15px;
+    margin: 2rem;
+  }
+  
+  .cooldown-timer {
+    font-size: 2.5rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .cooldown-timer i {
+    color: #2196f3;
+  }
+  
+  .swipe-progress {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 80%;
+    max-width: 400px;
+  }
+  
+  .progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: #2196f3;
+    transition: width 0.3s ease;
+  }
+  
+  .fa-spin {
+    animation: fa-spin 2s infinite linear;
+  }
+  
+  @keyframes fa-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
