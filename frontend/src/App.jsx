@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import GenreSelection from './pages/GenreSelection';
 import SwipePage from './pages/SwipePage';
+import CineTracker from './pages/CineTracker';
 
 // components
 import Navbar from './components/Navbar';
@@ -36,6 +37,14 @@ function App() {
             element={
               <PrivateRoute>
                 <SwipePage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/tracker"
+            element={
+              <PrivateRoute>
+                <CineTracker />
               </PrivateRoute>
             }
           />

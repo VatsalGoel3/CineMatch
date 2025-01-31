@@ -1,0 +1,174 @@
+.cinetracker-container {
+    padding: 80px 20px 20px;
+    min-height: 100vh;
+    background-color: #000;
+    color: #fff;
+}
+
+.cinetracker-title {
+    text-align: center;
+    color: #00ffc8;
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Stats Section */
+.stats-section {
+    margin-bottom: 3rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card i {
+    font-size: 2rem;
+    color: #00ffc8;
+    margin-bottom: 10px;
+}
+
+.stat-card h3 {
+    margin: 10px 0;
+    font-size: 1.2rem;
+}
+
+.stat-card p {
+    font-size: 1.5rem;
+    color: #00ffc8;
+}
+
+/* Collections Tabs */
+.collections-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 2rem;
+}
+
+.tab {
+    padding: 10px 20px;
+    background: none;
+    border: 2px solid #00ffc8;
+    color: #00ffc8;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab:hover {
+    background: rgba(0, 255, 200, 0.1);
+}
+
+.tab.active {
+    background: #00ffc8;
+    color: #000;
+}
+
+/* Movies Grid */
+.movies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.movie-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 2/3;
+    transition: transform 0.3s ease;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+}
+
+.movie-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.movie-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.movie-card:hover .movie-card-overlay {
+    transform: translateY(0);
+}
+
+.movie-card-overlay h3 {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+}
+
+.rating-stars {
+    margin: 10px 0;
+}
+
+.rating-stars i {
+    color: #888;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.rating-stars i.filled {
+    color: #ffd700;
+}
+
+.remove-btn {
+    background: none;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+.remove-btn:hover {
+    color: #ff0000;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 50px;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .collections-tabs {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tab {
+        width: 80%;
+    }
+
+    .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+} 
