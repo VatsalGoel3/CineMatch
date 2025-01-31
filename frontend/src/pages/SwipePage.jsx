@@ -6,6 +6,7 @@ import "./SwipePage.css";
 
 const SWIPE_COOLDOWN = 10; // 2 minutes in seconds
 const SWIPES_BEFORE_COOLDOWN = 20;
+const SWIPE_COUNT_KEY = 'swipeCount';
 
 export default function SwipePage() {
   const { token } = useContext(AuthContext);
@@ -25,7 +26,15 @@ export default function SwipePage() {
   // Refs to each card (for programmatic removal)
   const childRefs = useRef([]);
 
-  const [swipeCount, setSwipeCount] = useState(0);
+  const [swipeCount, setSwipeCount] = useState(() => {
+    const savedCount = localStorage.getItem(SWIPE_COUNT_KEY);
+    return savedCount ? parseInt(savedCount) : 0;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(SWIPE_COUNT_KEY, swipeCount.toString());
+  }, [swipeCount]);
+
   const [cooldownActive, setCooldownActive] = useState(false);
   const [cooldownTimer, setCooldownTimer] = useState(SWIPE_COOLDOWN);
   const timerRef = useRef(null);
@@ -129,8 +138,11 @@ export default function SwipePage() {
 
   const startCooldownTimer = () => {
     setCooldownActive(true);
-    setAllSwiped(false); // Reset allSwiped when cooldown starts
+    setAllSwiped(false);
     if (timerRef.current) clearInterval(timerRef.current);
+    
+    localStorage.setItem(SWIPE_COUNT_KEY, '0');
+    setSwipeCount(0);
     
     timerRef.current = setInterval(() => {
       setCooldownTimer(prev => {
@@ -138,7 +150,7 @@ export default function SwipePage() {
           clearInterval(timerRef.current);
           setCooldownActive(false);
           localStorage.removeItem('swipeCooldownEnd');
-          fetchMovies(); // Fetch new recommendations
+          fetchMovies();
           return SWIPE_COOLDOWN;
         }
         return prev - 1;
