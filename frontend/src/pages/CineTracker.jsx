@@ -28,17 +28,22 @@ export default function CineTracker() {
     const fetchUserCollections = async () => {
         try {
             const response = await api.get('/user/collections');
-            setCollections(response.data);
+            if (response.data) {
+                setCollections(response.data);
+            }
             setIsLoading(false);
         } catch (err) {
             console.error('Error fetching collections:', err);
+            setIsLoading(false);
         }
     };
 
     const fetchUserStats = async () => {
         try {
             const response = await api.get('/user/stats');
-            setStats(response.data);
+            if (response.data) {
+                setStats(response.data);
+            }
         } catch (err) {
             console.error('Error fetching stats:', err);
         }
@@ -47,7 +52,7 @@ export default function CineTracker() {
     const handleRemoveMovie = async (movieId, collection) => {
         try {
             await api.delete(`/user/collections/${collection}/${movieId}`);
-            fetchUserCollections(); // Refresh collections
+            fetchUserCollections();
         } catch (err) {
             console.error('Error removing movie:', err);
         }
@@ -56,7 +61,7 @@ export default function CineTracker() {
     const handleUpdateRating = async (movieId, newRating) => {
         try {
             await api.put(`/user/collections/watched/${movieId}`, { rating: newRating });
-            fetchUserCollections(); // Refresh collections
+            fetchUserCollections();
         } catch (err) {
             console.error('Error updating rating:', err);
         }

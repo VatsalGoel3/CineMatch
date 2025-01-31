@@ -4,9 +4,16 @@ const requireAuth = require('../middleware/requireAuth');
 const User = require('../models/User');
 const Movie = require('../models/Movie');
 
+// Debug middleware
+router.use((req, res, next) => {
+    console.log('UserCollections Route:', req.method, req.url);
+    next();
+});
+
 // GET /user/collections
 // Returns all movie collections for the user
 router.get('/collections', requireAuth, async (req, res) => {
+    console.log('Fetching collections for user:', req.user.userId);
     try {
         const user = await User.findById(req.user.userId)
             .populate('likes', '_id title posterPath releaseDate')
@@ -54,6 +61,7 @@ router.get('/collections', requireAuth, async (req, res) => {
 // GET /user/stats
 // Returns user's movie statistics
 router.get('/stats', requireAuth, async (req, res) => {
+    console.log('Fetching stats for user:', req.user.userId);
     try {
         const user = await User.findById(req.user.userId)
             .populate('watched.movieId')
