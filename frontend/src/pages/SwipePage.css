@@ -191,11 +191,22 @@
     text-align: center;
     margin-top: 40px;
     color: #fff;
+    padding: 2rem;
+    background: rgba(33, 33, 33, 0.9);
+    border-radius: 15px;
+    max-width: 500px;
   }
   
   .out-of-cards h2 {
     font-size: 1.8rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    color: #2196f3;
+  }
+  
+  .out-of-cards p {
+    margin: 1rem 0;
+    font-size: 1.1rem;
+    line-height: 1.5;
   }
   
   @media (max-width: 768px) {

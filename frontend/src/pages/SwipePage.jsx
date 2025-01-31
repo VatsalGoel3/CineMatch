@@ -41,6 +41,8 @@ export default function SwipePage() {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const [noMoreRecommendations, setNoMoreRecommendations] = useState(false);
+
   useEffect(() => {
     fetchMovies();
     // Check localStorage for existing cooldown
@@ -63,6 +65,11 @@ export default function SwipePage() {
       const res = await api.get("/movies/recommendations");
       const movieArray = res.data?.data || [];
       
+      if (movieArray.length === 0) {
+        setNoMoreRecommendations(true);
+        return;
+      }
+      
       // Preload all images before showing the cards
       await Promise.all(
         movieArray.map(movie => {
@@ -74,7 +81,7 @@ export default function SwipePage() {
             const img = new Image();
             img.src = movie.poster;
             img.onload = resolve;
-            img.onerror = resolve; // Handle failed loads gracefully
+            img.onerror = resolve;
           });
         })
       );
@@ -82,8 +89,12 @@ export default function SwipePage() {
       setMovies(movieArray);
       setCurrentIndex(movieArray.length - 1);
       childRefs.current = movieArray.map(() => React.createRef());
+      setNoMoreRecommendations(false);
     } catch (err) {
       console.error("Fetch Movies Error:", err.response?.data || err.message);
+      if (err.response?.status === 404) {
+        setNoMoreRecommendations(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -300,10 +311,18 @@ export default function SwipePage() {
           <p>Taking a break! Come back in a moment.</p>
           <p>This helps us find better movies for you.</p>
         </div>
+      ) : noMoreRecommendations ? (
+        <div className="out-of-cards">
+          <h2>No More Movies to Recommend</h2>
+          <p>You've gone through all our current recommendations!</p>
+          <p>We're training our system to find new movies for you.</p>
+          <p>Please check back tomorrow for fresh recommendations.</p>
+        </div>
       ) : allSwiped ? (
         <div className="out-of-cards">
-          <h2>You've swiped all recommended movies!</h2>
-          <p>Come back later for more.</p>
+          <h2>Taking a Short Break</h2>
+          <p>We're finding more movies for you.</p>
+          <p>Please wait a moment...</p>
         </div>
       ) : (
         <>
