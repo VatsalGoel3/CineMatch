@@ -4,12 +4,6 @@ const requireAuth = require('../middleware/requireAuth');
 const User = require('../models/User');
 const Movie = require('../models/Movie');
 
-// Debug middleware
-router.use((req, res, next) => {
-    console.log('UserCollections Route:', req.method, req.url);
-    next();
-});
-
 // GET /user/collections
 // Returns all movie collections for the user
 router.get('/collections', requireAuth, async (req, res) => {
@@ -176,6 +170,60 @@ router.put('/collections/watched/:movieId', requireAuth, async (req, res) => {
     } catch (err) {
         console.error('Update Rating Error:', err);
         return res.status(500).json({ msg: 'Server error updating rating' });
+    }
+});
+
+// GET /user/collections/watched
+// Returns all watched movies for the user
+router.get('/watched', requireAuth, async (req, res) => {
+    console.log('Fetching watched movies for user:', req.user.userId);
+    try {
+        const user = await User.findById(req.user.userId)
+            .populate('watched.movieId', '_id title posterPath releaseDate');
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        const watchedMovies = user.watched.map(watch => ({
+            id: watch.movieId._id,
+            title: watch.movieId.title,
+            poster: watch.movieId.posterPath ? `https://image.tmdb.org/t/p/w500${watch.movieId.posterPath}` : '',
+            release_date: watch.movieId.releaseDate,
+            rating: watch.rating,
+            watchedAt: watch.watchedAt
+        }));
+
+        return res.json(watchedMovies);
+    } catch (err) {
+        console.error('Fetch Watched Movies Error:', err);
+        return res.status(500).json({ msg: 'Server error fetching watched movies' });
+    }
+});
+
+// GET /user/collections/likes
+// Returns all liked movies for the user
+router.get('/likes', requireAuth, async (req, res) => {
+    console.log('Fetching liked movies for user:', req.user.userId);
+    try {
+        const user = await User.findById(req.user.userId)
+            .populate('likes', '_id title posterPath releaseDate');
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        const likedMovies = user.likes.map(movie => ({
+            id: movie._id,
+            title: movie.title,
+            poster: movie.posterPath ? `https://image.tmdb.org/t/p/w500${movie.posterPath}` : '',
+            release_date: movie.releaseDate
+        }));
+
+        return res.json(likedMovies);
+    } catch (err) {
+        console.error('Fetch Liked Movies Error:', err);
+        return res.status(500).json({ msg: 'Server error fetching liked movies' });
     }
 });
 

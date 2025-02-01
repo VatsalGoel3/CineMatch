@@ -7,6 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const requireAuth = require('../middleware/requireAuth');
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 
 // Configure multer for profile picture uploads
 const storage = multer.diskStorage({
@@ -18,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 5000000 }, // 5MB limit
+    limits: { fileSize: 5000000 },
     fileFilter: function(req, file, cb) {
         const filetypes = /jpeg|jpg|png/;
         const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -32,9 +33,9 @@ const upload = multer({
     }
 });
 
-// Debug middleware should be first
+// Debug middleware
 router.use((req, res, next) => {
-    console.log('User Profile Route:', {
+    console.log('Profile Route:', {
         method: req.method,
         originalUrl: req.originalUrl,
         path: req.path,
@@ -43,20 +44,15 @@ router.use((req, res, next) => {
     next();
 });
 
-// GET /profile/preferences
-router.get('/profile/preferences', requireAuth, async (req, res) => {
-    console.log('Handling preferences request:', {
-        userId: req.user.userId,
-        path: req.path,
-        fullPath: req.baseUrl + req.path
-    });
+// GET /preferences
+router.get('/preferences', requireAuth, async (req, res) => {
+    console.log('Handling preferences request in profile router');
     try {
         const user = await User.findById(req.user.userId);
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        // Make sure preferences exists
         if (!user.preferences) {
             user.preferences = {
                 language: 'en',
@@ -73,14 +69,12 @@ router.get('/profile/preferences', requireAuth, async (req, res) => {
     }
 });
 
-// PUT /user/profile/update
-router.put('/profile/update', requireAuth, [
+// PUT /profile/update
+router.put('/update', requireAuth, [
     body('username').optional().trim().isLength({ min: 3 }),
     body('email').optional().isEmail(),
     body('currentPassword').optional().isLength({ min: 8 }),
-    body('newPassword').optional().isLength({ min: 8 }),
-    body('language').optional().isIn(['en', 'es', 'fr']),
-    body('showMatureContent').optional().isBoolean()
+    body('newPassword').optional().isLength({ min: 8 })
 ], async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -105,10 +99,6 @@ router.put('/profile/update', requireAuth, [
         // Update other fields
         if (req.body.username) user.username = req.body.username;
         if (req.body.email) user.email = req.body.email;
-        if (req.body.language) user.preferences.language = req.body.language;
-        if (typeof req.body.showMatureContent === 'boolean') {
-            user.preferences.showMatureContent = req.body.showMatureContent;
-        }
 
         await user.save();
 
@@ -118,18 +108,29 @@ router.put('/profile/update', requireAuth, [
             username: user.username,
             email: user.email,
             profilePicture: user.profilePicture,
-            preferences: user.preferences
+            role: user.role
         };
 
-        return res.status(200).json({ msg: 'Profile updated', user: userResponse });
+        // Generate new token with updated user info
+        const token = jwt.sign(
+            { userId: user._id, username: user.username, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        return res.status(200).json({
+            msg: 'Profile updated successfully',
+            user: userResponse,
+            token
+        });
     } catch (error) {
         console.error('Update Profile Error:', error);
         return res.status(500).json({ msg: 'Server error' });
     }
 });
 
-// POST /user/profile/picture
-router.post('/profile/picture', requireAuth, upload.single('profilePicture'), async (req, res) => {
+// POST /profile/picture
+router.post('/picture', requireAuth, upload.single('profilePicture'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ msg: 'No file uploaded' });
@@ -162,8 +163,8 @@ router.post('/profile/picture', requireAuth, upload.single('profilePicture'), as
     }
 });
 
-// DELETE /user/profile/delete
-router.delete('/profile/delete', requireAuth, async (req, res) => {
+// DELETE /profile/delete
+router.delete('/delete', requireAuth, async (req, res) => {
     try {
         const user = await User.findById(req.user.userId);
         if (!user) {
@@ -186,9 +187,14 @@ router.delete('/profile/delete', requireAuth, async (req, res) => {
     }
 });
 
-// Test route
+// Add a test route to verify the router is working
 router.get('/test', (req, res) => {
-    res.json({ msg: 'User routes are working' });
+    res.json({ msg: 'Profile routes are working' });
+});
+
+// Add this at the top of your routes
+router.get('/', (req, res) => {
+    res.json({ msg: 'Profile router is working' });
 });
 
 module.exports = router; 

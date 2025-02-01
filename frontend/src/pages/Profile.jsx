@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import './Profile.css';
@@ -15,38 +15,18 @@ export default function Profile() {
         email: user?.email || '',
         currentPassword: '',
         newPassword: '',
-        confirmPassword: '',
-        language: 'en',
-        showMatureContent: false
+        confirmPassword: ''
     });
 
     // Profile picture state
     const [profilePicture, setProfilePicture] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
 
-    useEffect(() => {
-        // Load user preferences
-        const fetchPreferences = async () => {
-            try {
-                const response = await api.get('/user/preferences');
-                setFormData(prev => ({
-                    ...prev,
-                    language: response.data.language || 'en',
-                    showMatureContent: response.data.showMatureContent || false
-                }));
-            } catch (error) {
-                console.error('Error fetching preferences:', error);
-            }
-        };
-
-        fetchPreferences();
-    }, []);
-
     const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
     };
 
@@ -64,20 +44,40 @@ export default function Profile() {
         setMessage({ type: '', text: '' });
 
         try {
-            // Handle profile picture upload if changed
+            // Handle profile picture upload first if there is one
             if (profilePicture) {
-                const formData = new FormData();
-                formData.append('profilePicture', profilePicture);
-                await api.post('/user/profile-picture', formData);
+                const pictureFormData = new FormData();
+                pictureFormData.append('profilePicture', profilePicture);
+                await api.post('/user/profile/picture', pictureFormData);
             }
 
-            // Update user information
-            const response = await api.put('/user/profile', formData);
+            // Handle profile data update
+            const updateData = {
+                username: formData.username,
+                email: formData.email
+            };
+
+            // Only include password fields if they're being updated
+            if (formData.currentPassword && formData.newPassword) {
+                updateData.currentPassword = formData.currentPassword;
+                updateData.newPassword = formData.newPassword;
+            }
+
+            const response = await api.put('/user/profile/update', updateData);
             
             login(response.data.user, response.data.token);
             setMessage({ type: 'success', text: 'Profile updated successfully!' });
             setIsEditing(false);
+            
+            // Reset password fields
+            setFormData(prev => ({
+                ...prev,
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: ''
+            }));
         } catch (error) {
+            console.error('Update Error:', error);
             setMessage({ 
                 type: 'error', 
                 text: error.response?.data?.msg || 'Error updating profile'
@@ -90,7 +90,7 @@ export default function Profile() {
     const handleDeleteAccount = async () => {
         if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
             try {
-                await api.delete('/user/account');
+                await api.delete('/user/profile/delete');
                 logout();
             } catch (error) {
                 setMessage({ 
@@ -190,36 +190,6 @@ export default function Profile() {
                             </div>
                         </>
                     )}
-                </div>
-
-                <div className="profile-section">
-                    <h2>Preferences</h2>
-                    <div className="form-group">
-                        <label>Language</label>
-                        <select
-                            name="language"
-                            value={formData.language}
-                            onChange={handleInputChange}
-                            disabled={!isEditing}
-                        >
-                            <option value="en">English</option>
-                            <option value="es">Español</option>
-                            <option value="fr">Français</option>
-                        </select>
-                    </div>
-
-                    <div className="form-group checkbox">
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="showMatureContent"
-                                checked={formData.showMatureContent}
-                                onChange={handleInputChange}
-                                disabled={!isEditing}
-                            />
-                            Show Mature Content
-                        </label>
-                    </div>
                 </div>
 
                 <div className="profile-actions">
