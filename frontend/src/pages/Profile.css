@@ -1,0 +1,196 @@
+.profile-container {
+    max-width: 800px;
+    margin: 80px auto 2rem;
+    padding: 2rem;
+    background: #1a1a1a;
+    border-radius: 10px;
+    color: #fff;
+}
+
+.profile-container h1 {
+    text-align: center;
+    color: #00ffc8;
+    margin-bottom: 2rem;
+}
+
+.message {
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.message.success {
+    background-color: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+    border: 1px solid #00ff00;
+}
+
+.message.error {
+    background-color: rgba(255, 0, 0, 0.1);
+    color: #ff0000;
+    border: 1px solid #ff0000;
+}
+
+.profile-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: #222;
+    border-radius: 8px;
+}
+
+.profile-section h2 {
+    color: #00ffc8;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.profile-picture-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #00ffc8;
+}
+
+.upload-button {
+    background: #333;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.upload-button:hover {
+    background: #444;
+}
+
+.hidden {
+    display: none;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #ccc;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.8rem;
+    background: #333;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+    background: #2a2a2a;
+    cursor: not-allowed;
+}
+
+.form-group.checkbox {
+    display: flex;
+    align-items: center;
+}
+
+.form-group.checkbox label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.form-group.checkbox input {
+    width: auto;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.profile-actions button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.3s;
+}
+
+.profile-actions button:hover {
+    transform: translateY(-2px);
+}
+
+.edit-button {
+    background: #00ffc8;
+    color: #000;
+}
+
+.save-button {
+    background: #4CAF50;
+    color: white;
+}
+
+.cancel-button {
+    background: #666;
+    color: white;
+}
+
+.danger-zone {
+    margin-top: 3rem;
+    padding: 1.5rem;
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+.delete-button {
+    background: #ff4444;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+    background: #cc0000;
+}
+
+@media (max-width: 768px) {
+    .profile-container {
+        margin: 60px 1rem 1rem;
+        padding: 1rem;
+    }
+
+    .profile-section {
+        padding: 1rem;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+    }
+
+    .profile-actions button {
+        width: 100%;
+    }
+} 

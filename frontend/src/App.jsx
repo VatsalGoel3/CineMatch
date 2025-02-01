@@ -8,6 +8,7 @@ import Register from './pages/Register';
 import GenreSelection from './pages/GenreSelection';
 import SwipePage from './pages/SwipePage';
 import CineTracker from './pages/CineTracker';
+import Profile from './pages/Profile';
 
 // components
 import Navbar from './components/Navbar';
@@ -45,6 +46,14 @@ function App() {
             element={
               <PrivateRoute>
                 <CineTracker />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
               </PrivateRoute>
             }
           />

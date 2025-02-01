@@ -33,6 +33,8 @@ export default function Navbar() {
                         <span className='divider'>|</span>
                         <Link to="/tracker" className='navbar-link'>CineTracker</Link>
                         <span className='divider'>|</span>
+                        <Link to="/profile" className='navbar-link'>Profile</Link>
+                        <span className='divider'>|</span>
                         <span className='navbar-user'>Hello, {user.username}</span>
                         <button onClick={handleLogout} className='navbar-logout-btn'>Logout</button>
                     </>
