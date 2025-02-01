@@ -1,13 +1,16 @@
 import { useContext } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import UnauthorizedAccess from "./UnauthorizedAccess";
 
 export default function PrivateRoute({ children, adminOnly = false }) {
     const { user, token } = useContext(AuthContext);
+    const location = useLocation();
 
     // Check if the user is authenticated
     if (!token || !user) {
-        return <Navigate to="/login" replace />;
+        // Redirect to login while saving the attempted URL
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
     // Allow admin users to access any route
@@ -17,7 +20,7 @@ export default function PrivateRoute({ children, adminOnly = false }) {
 
     // Restrict non-admin users from accessing admin-only routes
     if (adminOnly && user.role !== 'admin') {
-        return <Navigate to="/" replace />;
+        return <UnauthorizedAccess />;
     }
 
     // Allow access to non-admin protected routes for authenticated users

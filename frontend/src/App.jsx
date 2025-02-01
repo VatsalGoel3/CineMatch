@@ -1,4 +1,4 @@
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import AuthProvider from './context/AuthContext';
 
 // pages
@@ -17,48 +17,46 @@ import PrivateRoute from './components/PrivateRoute';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          {/* Protected routes */}
-          <Route
-            path="/select-genres"
-            element={
-              <PrivateRoute>
-                <GenreSelection />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/swipe"
-            element={
-              <PrivateRoute>
-                <SwipePage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/tracker"
-            element={
-              <PrivateRoute>
-                <CineTracker />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <PrivateRoute>
-                <Profile />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        
+        {/* Protected routes */}
+        <Route
+          path="/select-genres"
+          element={
+            <PrivateRoute>
+              <GenreSelection />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/swipe"
+          element={
+            <PrivateRoute>
+              <SwipePage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tracker"
+          element={
+            <PrivateRoute>
+              <CineTracker />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
     </AuthProvider>
   );
 }

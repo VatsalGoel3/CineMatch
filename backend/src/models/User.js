@@ -58,6 +58,20 @@ const userSchema = new mongoose.Schema(
         totalSwipes: {
             type: Number,
             default: 0
+        },
+        profilePicture: {
+            type: String,
+            default: ''
+        },
+        preferences: {
+            language: {
+                type: String,
+                default: 'en'
+            },
+            showMatureContent: {
+                type: Boolean,
+                default: false
+            }
         }
     },
     { timestamps: true}

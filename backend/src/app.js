@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
 
 // Import routes
 const authRouter = require('./routes/auth');
@@ -10,6 +12,7 @@ const genresRouter = require('./routes/genres');
 const swipeRouter = require('./routes/swipe');
 const recommendationsRouter = require('./routes/recommendations');
 const userCollectionsRouter = require('./routes/userCollections');
+const userRoutes = require('./routes/user');
 
 const app = express();
 
@@ -33,6 +36,16 @@ app.use('/genres', genresRouter);
 app.use('/swipe', swipeRouter);
 app.use('/movies/recommendations', recommendationsRouter);
 app.use('/user', userCollectionsRouter);
+app.use('/user', userRoutes);
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../uploads/profile-pictures');
+if (!fs.existsSync(uploadsDir)){
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // 404 handler
 app.use((req, res) => {

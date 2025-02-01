@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
 import './AuthPages.css';
@@ -10,6 +10,7 @@ export default function Login() {
     const { login } = useContext(AuthContext);
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
     
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -18,13 +19,9 @@ export default function Login() {
             const { token, user } = res.data;
             login(user, token);
 
-            if (user.role === 'admin') {
-              navigate('/');
-            } else if (user.preferredGenres.length === 0) {
-              navigate('/select-genres');
-            } else {
-              navigate('/'); // Change to swipe page
-            }
+            // Redirect to the page they tried to visit or default route
+            const from = location.state?.from?.pathname || '/';
+            navigate(from);
         } catch (err) {
             console.error('Login Error:', err.response?.data || err.message);
             alert(err.response?.data?.msg || 'Login failed');
