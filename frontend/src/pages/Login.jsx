@@ -19,8 +19,8 @@ export default function Login() {
             const { token, user } = res.data;
             login(user, token);
 
-            // Redirect to the page they tried to visit or default route
-            const from = location.state?.from?.pathname || '/';
+            // Redirect based on whether the user is new or returning
+            const from = user.preferredGenres && user.preferredGenres.length > 0 ? '/' : '/select-genres';
             navigate(from);
         } catch (err) {
             console.error('Login Error:', err.response?.data || err.message);
@@ -61,5 +61,5 @@ export default function Login() {
             </form>
           </div>
         </div>
-      );
+    );
 }

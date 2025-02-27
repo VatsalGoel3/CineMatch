@@ -32,6 +32,10 @@ export default function AuthProvider({ children }) {
         setToken(tokenValue);
         localStorage.setItem('cine_token', tokenValue);
         localStorage.setItem('cine_user', JSON.stringify(userData));
+
+        // Reset swipe count and cooldown on login
+        localStorage.setItem('swipeCount', '0');
+        localStorage.removeItem('swipeCooldownEnd');
     };
 
     const logout = () => {
