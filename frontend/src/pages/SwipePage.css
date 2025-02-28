@@ -128,6 +128,14 @@
     background-color: #1976d2;
   }
 
+  .action-btn.more-info {
+    background-color: #9c27b0;
+  }
+
+  .action-btn.more-info:hover {
+    background-color: #7b1fa2;
+  }
+
   .star-icon {
     font-size: 2rem;
     margin: 5px;
@@ -324,4 +332,3 @@
     color: #fff;
     font-size: 1.2rem;
   }
-  

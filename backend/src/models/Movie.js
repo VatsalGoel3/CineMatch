@@ -15,6 +15,7 @@ const movieSchema = new mongoose.Schema({
     voteAverage: { type: Number },
     voteCount: {type: Number },
     genreIds: [{ type: Number }],
+    imdbId: { type: String }
     // add more fields in future as needed
 }, { timestamps: true });
 

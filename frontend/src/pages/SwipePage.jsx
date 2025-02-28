@@ -3,6 +3,7 @@ import TinderCard from "react-tinder-card";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import "./SwipePage.css";
+//import { move } from "../../../backend/src/routes/auth";
 
 const SWIPE_COOLDOWN = 10; // 2 minutes in seconds
 const SWIPES_BEFORE_COOLDOWN = 20;
@@ -63,6 +64,7 @@ export default function SwipePage() {
     try {
       setIsLoading(true);
       const res = await api.get("/movies/recommendations");
+      console.log("Fetched Movies Data:", res.data.data); // Log actual movie array
       const movieArray = res.data?.data || [];
       
       if (movieArray.length === 0) {
@@ -293,6 +295,16 @@ export default function SwipePage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleMoreInfo = (movie) => {
+    if (!movie || !movie.imdbId) {
+      alert("IMDb information is not available for this movie.");
+      return;
+    }
+  
+    const imdbUrl = `https://www.imdb.com/title/${movie.imdbId}/`;
+    window.open(imdbUrl, '_blank');
+  };
+
   return (
     <div className="swipe-page">
       <h1>Swipe Movies</h1>
@@ -369,6 +381,12 @@ export default function SwipePage() {
               onClick={() => handleSwipeAction("right", movies[currentIndex].id)}
             >
               <i className="fa-solid fa-thumbs-up"></i>
+            </button>
+            <button
+              className="action-btn more-info"
+              onClick={() => handleMoreInfo(movies[currentIndex])}
+            >
+              <i className="fa-solid fa-info-circle"></i>
             </button>
           </div>
 
