@@ -22,6 +22,7 @@ const fetchMoviesValidation = [
 // GET /movies/populate
 // Fetches "popular" movies from TMDB, stores them
 // ===============================================
+// GET /movies/populate
 router.get('/populate', fetchMoviesValidation, async (req, res) => {
     try {
         // 1. Validate query params
@@ -35,24 +36,22 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
 
         // 2. Grab query params (default values if not provided)
         const startPage = 1;       
-        const endPage = 50;        // Increased to fetch 1000 movies (20 movies per page * 50 pages)
+        const endPage = 500;        
         const language = req.query.language || 'en-US';
 
-        // 3. Prepare TMDB endpoint
+        // 3. Prepare TMDB endpoint and API key
         const apiKey = process.env.TMDB_API_KEY;
         if (!apiKey) {
             return res.status(500).json({ msg: 'TMDB API Key not configured' });
         }
 
-        // 4. Fetch data from TMDB
         let totalFetched = 0;
         let totalUpserted = 0;
 
         for (let page = startPage; page <= endPage; page++) {
             const tmdbUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=${language}&page=${page}`;
-
             const tmdbResponse = await axios.get(tmdbUrl);
-            const results = tmdbResponse.data.results; // array of movies
+            const results = tmdbResponse.data.results;
             if (!results || results.length === 0) {
                 console.log(`No movies found from TMDB on page ${page}`);
                 continue;
@@ -60,10 +59,19 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
 
             totalFetched += results.length;
 
-            // 5. Iterate through movies, upsert into DB
             for (const movie of results) {
-                // Skip items that lack an 'id' field:
                 if (!movie.id) continue;
+
+                // NEW: Fetch movie details to get the IMDb ID
+                let imdbId = null;
+                try {
+                    const detailsUrl = `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${apiKey}&language=${language}`;
+                    const detailsResponse = await axios.get(detailsUrl);
+                    imdbId = detailsResponse.data.imdb_id || null;
+                } catch (err) {
+                    console.error(`Failed to fetch details for movie ${movie.id}:`, err.message);
+                }
+
                 const filter = { tmdbId: movie.id };
                 const update = {
                     tmdbId: movie.id,
@@ -75,7 +83,8 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
                     popularity: movie.popularity,
                     voteAverage: movie.vote_average,
                     voteCount: movie.vote_count,
-                    genreIds: movie.genre_ids
+                    genreIds: movie.genre_ids,
+                    imdbId // Store the fetched IMDb ID
                 };
                 const options = { upsert: true, new: true };
                 const upserted = await Movie.findOneAndUpdate(filter, update, options);
@@ -92,8 +101,7 @@ router.get('/populate', fetchMoviesValidation, async (req, res) => {
     
     } catch (error) {
         console.error('TMDB Populate Error:', error);
-        // if it's an axios error, you can handle details here
-        return res.status(500).json({ msg: 'Server error occured' });
+        return res.status(500).json({ msg: 'Server error occurred' });
     }
 });
 

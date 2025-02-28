@@ -64,6 +64,7 @@ export default function SwipePage() {
     try {
       setIsLoading(true);
       const res = await api.get("/movies/recommendations");
+      console.log("Fetched Movies Data:", res.data.data); // Log actual movie array
       const movieArray = res.data?.data || [];
       
       if (movieArray.length === 0) {
@@ -295,14 +296,13 @@ export default function SwipePage() {
   };
 
   const handleMoreInfo = (movie) => {
-    if (movie.imdbUrl) {
-      window.open(movie.imdbUrl, '_blank'); 
-    } else if (movie.imdbId) {
-      const imdbUrl = `https://www.imdb.com/title/${movie.imdbId}/`;
-      window.open(imdbUrl, '_blank')
-    } else {
-      alert("IMDB information is not available for this movie.")
+    if (!movie || !movie.imdbId) {
+      alert("IMDb information is not available for this movie.");
+      return;
     }
+  
+    const imdbUrl = `https://www.imdb.com/title/${movie.imdbId}/`;
+    window.open(imdbUrl, '_blank');
   };
 
   return (

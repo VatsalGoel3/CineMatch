@@ -102,7 +102,8 @@ async function getWeightBasedRecommendations(user, interactedMovieIds, res) {
                 ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
                 : '',
             release_date: movie.releaseDate,
-            score: total
+            score: total,
+            imdbId: movie.imdbId || null
         };
     });
 
@@ -181,7 +182,8 @@ async function getAIRecommendations(user, res) {
             poster: movie.posterPath 
                 ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
                 : '',
-            release_date: movie.releaseDate
+            release_date: movie.releaseDate,
+            imdbId: movie.imdbId || null
         }));
 
         return res.status(200).json({ 
