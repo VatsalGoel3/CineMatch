@@ -3,6 +3,7 @@ import TinderCard from "react-tinder-card";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import "./SwipePage.css";
+//import { move } from "../../../backend/src/routes/auth";
 
 const SWIPE_COOLDOWN = 10; // 2 minutes in seconds
 const SWIPES_BEFORE_COOLDOWN = 20;
@@ -293,6 +294,17 @@ export default function SwipePage() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleMoreInfo = (movie) => {
+    if (movie.imdbUrl) {
+      window.open(movie.imdbUrl, '_blank'); 
+    } else if (movie.imdbId) {
+      const imdbUrl = `https://www.imdb.com/title/${movie.imdbId}/`;
+      window.open(imdbUrl, '_blank')
+    } else {
+      alert("IMDB information is not available for this movie.")
+    }
+  };
+
   return (
     <div className="swipe-page">
       <h1>Swipe Movies</h1>
@@ -369,6 +381,12 @@ export default function SwipePage() {
               onClick={() => handleSwipeAction("right", movies[currentIndex].id)}
             >
               <i className="fa-solid fa-thumbs-up"></i>
+            </button>
+            <button
+              className="action-btn more-info"
+              onClick={() => handleMoreInfo(movies[currentIndex])}
+            >
+              <i className="fa-solid fa-info-circle"></i>
             </button>
           </div>
 
