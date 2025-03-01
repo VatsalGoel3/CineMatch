@@ -305,6 +305,16 @@ export default function SwipePage() {
     window.open(imdbUrl, '_blank');
   };
 
+  const handleWantToWatch = async (movieId) => {
+    try {
+      const res = await api.post("/swipe/want-to-watch", { movieId });
+      console.log(`Marked as 'Want to Watch': ${movieId}`);
+      alert("Movie added to your 'Want to Watch' list!");
+    } catch (err) {
+      console.error("Want to Watch Error:", err.response?.data || err.message);
+    }
+  };
+
   return (
     <div className="swipe-page">
       <h1>Swipe Movies</h1>
@@ -387,6 +397,12 @@ export default function SwipePage() {
               onClick={() => handleMoreInfo(movies[currentIndex])}
             >
               <i className="fa-solid fa-info-circle"></i>
+            </button>
+            <button
+              classname="action-btn want-to-watch"
+              onClick={() => handleWantToWatch(movies[currentIndex].id)}
+            >
+              <i className="fa-solid fa-bookmark"></i>
             </button>
           </div>
 

@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema(
                 default: Date.now
             }
         }],
+        wantToWatch: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Movie'
+        }],
         lastSwipeTime: {
             type: Date,
             default: null
