@@ -10,7 +10,7 @@ const RECOMMENDER_SERVICE_URL = process.env.RECOMMENDER_SERVICE_URL || 'http://l
 const SWITCH_TO_AI_AFTER = 20; // Switch to AI recommendations after 20 swipes
 
 // GET /movies/recommendations
-// Protected route to get recommended movies based on user prefrences
+// Protected route to get recommended movies based on user preferences
 router.get('/', requireAuth, async (req, res) => {
     try {
         const userId = req.user.userId;

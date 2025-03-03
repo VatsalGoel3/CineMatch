@@ -85,7 +85,7 @@ router.post('/watched', requireAuth, watchedValidation, async (req, res) => {
 
         const user = await User.findById(userId);
 
-        // Check if movie is already in watcged
+        // Check if movie is already in watched
         const existing = user.watched.find((w) => w.movieId.equals(movieId));
         if (existing) {
             // Update rating and timestamp
