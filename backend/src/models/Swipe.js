@@ -18,7 +18,4 @@ const swipeSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// Unique single doc for each unique user+movie combo
-// Will update, if user changes like -> dislike
-
 module.exports = mongoose.model('Swipe', swipeSchema);

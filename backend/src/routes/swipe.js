@@ -104,4 +104,28 @@ router.post('/watched', requireAuth, watchedValidation, async (req, res) => {
     }
 });
 
+router.post('/want-to-watch', requireAuth, async (req, res) => {
+    try {
+        const { movieId } = req.body;
+        const userId = req.user.userId;
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        if (user.wantToWatch.includes(movieId)) {
+            return res.status(400).json({ msg: 'Movie is already in your Want to Watch list' });
+        }
+
+        user.wantToWatch.push(movieId);
+        await user.save();
+
+        return res.status(200).json({ msg: 'Movie added to Want to Watch list' });
+    } catch (err) {
+        console.error('Want to Watch Error:', err);
+        return res.status(500).json({ msg: 'Server error' });
+    }
+});
+
 module.exports = router;

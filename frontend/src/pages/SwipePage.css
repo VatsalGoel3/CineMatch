@@ -136,6 +136,14 @@
     background-color: #7b1fa2;
   }
 
+  .action-btn.want-to-watch {
+    background-color: #ff9800;
+  }
+
+  .action-btn.want-to-watch:hover {
+    background-color: #e68900;
+  }
+
   .star-icon {
     font-size: 2rem;
     margin: 5px;
@@ -191,6 +199,7 @@
     border-radius: 5px;
     cursor: pointer;
   }
+
   .rating-buttons button:hover {
     background-color: #1976d2;
   }
