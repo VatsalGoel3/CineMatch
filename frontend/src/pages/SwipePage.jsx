@@ -305,11 +305,27 @@ export default function SwipePage() {
     window.open(imdbUrl, '_blank');
   };
 
-  const handleWantToWatch = async (movieId) => {
+  const handleWantToWatch = async (movieId, index) => {
     try {
-      const res = await api.post("/swipe/want-to-watch", { movieId });
+      await api.post("/swipe/want-to-watch", { movieId });
       console.log(`Marked as 'Want to Watch': ${movieId}`);
       alert("Movie added to your 'Want to Watch' list!");
+    
+      if (childRefs.current[index]?.current) {
+        childRefs.current[index].current.swipe("down");
+        setCurrentIndex((prev) => prev - 1);
+      }
+
+      setSwipeCount((prev) => {
+        const newCount = prev + 1;
+        if (newCount >= SWIPES_BEFORE_COOLDOWN) {
+          const endTime = Date.now() + SWIPE_COOLDOWN * 1000;
+          localStorage.setItem("swipeCooldownEnd", endTime.toString());
+          startCooldownTimer();
+          return 0;
+        }
+        return newCount;
+      });
     } catch (err) {
       console.error("Want to Watch Error:", err.response?.data || err.message);
     }
@@ -399,8 +415,8 @@ export default function SwipePage() {
               <i className="fa-solid fa-info-circle"></i>
             </button>
             <button
-              classname="action-btn want-to-watch"
-              onClick={() => handleWantToWatch(movies[currentIndex].id)}
+              className="action-btn want-to-watch"
+              onClick={() => handleWantToWatch(movies[currentIndex].id, currentIndex)}
             >
               <i className="fa-solid fa-bookmark"></i>
             </button>

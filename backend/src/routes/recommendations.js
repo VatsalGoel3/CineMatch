@@ -20,7 +20,8 @@ router.get('/', requireAuth, async (req, res) => {
             .populate('likes')
             .populate('dislikes')
             .populate('watched.movieId')
-            .populate('preferredGenres');
+            .populate('preferredGenres')
+            .populate('wantToWatch');
 
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
@@ -30,7 +31,8 @@ router.get('/', requireAuth, async (req, res) => {
         const interactedMovieIds = new Set([
             ...user.likes.map(m => m._id.toString()),
             ...user.dislikes.map(m => m._id.toString()),
-            ...user.watched.map(w => w.movieId._id.toString())
+            ...user.watched.map(w => w.movieId._id.toString()),
+            ...user.wantToWatch.map(m => m._id.toString())
         ]);
 
         // Get weight-based recommendations
